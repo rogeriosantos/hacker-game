@@ -1,0 +1,76 @@
+[gd_scene load_steps=4 format=3 uid="uid://b8j7m3yqp4xnh"]
+
+[ext_resource type="Shader" path="res://shaders/matrix_rain.gdshader" id="1_rain"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rain"]
+shader = ExtResource("1_rain")
+shader_parameter/cell_size = 14.0
+shader_parameter/rain_speed = 1.4
+shader_parameter/density = 0.85
+shader_parameter/glow = 1.15
+shader_parameter/rain_color = Color(0.1, 1, 0.28, 1)
+shader_parameter/head_color = Color(0.8, 1, 0.85, 1)
+shader_parameter/bg_color = Color(0, 0.02, 0, 1)
+shader_parameter/trail_length = 18.0
+shader_parameter/flicker_amount = 0.35
+
+[sub_resource type="LabelSettings" id="LabelSettings_boot"]
+font_size = 18
+font_color = Color(0.55, 1, 0.6, 1)
+outline_size = 4
+outline_color = Color(0, 0.05, 0, 0.6)
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MatrixRain" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_rain")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CenterPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -380.0
+offset_top = -120.0
+offset_right = 380.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="CenterPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="CenterPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="CenterPanel/Margin/VBox"]
+layout_mode = 2
+text = "> hacker-game // BOOT_SECTOR"
+label_settings = SubResource("LabelSettings_boot")
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CenterPanel/Margin/VBox"]
+layout_mode = 2
+text = "Phase E1 scaffold — Matrix rain online.
+Terminal + PowerShell wiring next."
+horizontal_alignment = 1
+autowrap_mode = 2

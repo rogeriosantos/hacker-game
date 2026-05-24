@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Dispatch to the Homebrew dotnet@8 SDK.
+# .NET 10 SDK is the system-wide `dotnet`; we pin to net8.0 because that's what
+# Godot.NET.Sdk/4.6.0 + Microsoft.PowerShell.SDK 7.4.x target.
+set -euo pipefail
+export DOTNET_ROOT="/opt/homebrew/opt/dotnet@8/libexec"
+exec "${DOTNET_ROOT}/dotnet" "$@"

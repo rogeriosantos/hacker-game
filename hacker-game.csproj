@@ -3,6 +3,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <RootNamespace>HackerGame</RootNamespace>
   </PropertyGroup>
@@ -10,5 +11,16 @@
   <ItemGroup>
     <!-- Real PowerShell 7 embedded in-process. This is the plan's load-bearing dependency. -->
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.4.7" />
+  </ItemGroup>
+
+  <!--
+    Godot.NET.Sdk relocates the intermediate output to .godot/mono/temp/obj/,
+    which is NOT matched by MSBuild's default obj/** exclude. Without this,
+    the auto-generated AssemblyInfo.cs gets compiled twice.
+    Also exclude the standalone spike project's source from this assembly.
+  -->
+  <ItemGroup>
+    <Compile Remove=".godot/**" />
+    <Compile Remove="spikes/RunspaceSpike/**" />
   </ItemGroup>
 </Project>
