@@ -17,16 +17,18 @@ run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.6", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+PowerShellRunner="*res://scripts/autoload/PowerShellRunner.cs"
+GameState="*res://scripts/autoload/GameState.cs"
+QuestManager="*res://scripts/autoload/QuestManager.cs"
+
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-
-[autoload]
-
-PowerShellRunner="*res://scripts/autoload/PowerShellRunner.cs"
 
 [dotnet]
 
