@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b5_q4_schedule"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L5Q4"]
+script = ExtResource("3_obj")
+Needle = "REGISTERED ScheduledTask"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_L5Q4_1"]
+script = ExtResource("2_hint")
+Text = "Two building blocks: `New-ScheduledTaskAction` describes what to run, `New-ScheduledTaskTrigger` describes when. Wire them together with `Register-ScheduledTask`."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L5Q4_2"]
+script = ExtResource("2_hint")
+Text = "Try: `$a = New-ScheduledTaskAction -Execute pwsh -Argument '-File payload.ps1'` then `$t = New-ScheduledTaskTrigger -AtStartup` then `Register-ScheduledTask -TaskName 'sync-helper' -Action $a -Trigger $t`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L5Q4_3"]
+script = ExtResource("2_hint")
+Text = "Your output must include `REGISTERED ScheduledTask` — the marker the mock prints when registration succeeds."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L5_q4_schedule_the_job"
+Title = "Schedule the Job"
+Narrative = "You can write files all day, but they don't run themselves. Register a scheduled task that fires on startup. The mock prints `[X] REGISTERED ScheduledTask` on success — that's how the objective knows it's a real register, not a Get."
+VfsFixtures = {}
+AllowedCmdlets = PackedStringArray("Register-ScheduledTask", "New-ScheduledTaskAction", "New-ScheduledTaskTrigger", "Get-ScheduledTask", "Get-Help")
+MockModulePaths = PackedStringArray("res://mock-modules/MockScheduledTask")
+Objective = SubResource("Objective_L5Q4")
+Hints = Array[Resource]([SubResource("Hint_L5Q4_1"), SubResource("Hint_L5Q4_2"), SubResource("Hint_L5Q4_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Register-ScheduledTask", "New-ScheduledTaskAction", "New-ScheduledTaskTrigger")
+Xp = 170
+BonusXpHintFree = 65

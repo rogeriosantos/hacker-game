@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b5_q3_structure"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/FileExistsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L5Q3"]
+script = ExtResource("3_obj")
+Path = "target/payloads/win/x64/loader.json"
+MustContain = "loader_id"
+
+[sub_resource type="Resource" id="Hint_L5Q3_1"]
+script = ExtResource("2_hint")
+Text = "Create directories with `New-Item -ItemType Directory -Path target/payloads/win/x64 -Force`. The -Force flag creates missing parents."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L5Q3_2"]
+script = ExtResource("2_hint")
+Text = "Then drop a JSON loader at that path: `Set-Content target/payloads/win/x64/loader.json -Value '{\"loader_id\":\"v3\"}'`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L5Q3_3"]
+script = ExtResource("2_hint")
+Text = "The objective wants the file at `target/payloads/win/x64/loader.json` and the content must contain the literal text `loader_id`."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L5_q3_build_the_structure"
+Title = "Build the Structure"
+Narrative = "Your payload's loader expects a nested folder tree to land in. Create `target/payloads/win/x64/` and drop a JSON manifest at `target/payloads/win/x64/loader.json` containing `loader_id`. Mind the depth — `New-Item -Force` creates missing parents."
+VfsFixtures = {}
+AllowedCmdlets = PackedStringArray("New-Item", "Set-Content", "Get-Help")
+MockModulePaths = PackedStringArray()
+Objective = SubResource("Objective_L5Q3")
+Hints = Array[Resource]([SubResource("Hint_L5Q3_1"), SubResource("Hint_L5Q3_2"), SubResource("Hint_L5Q3_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray()
+Xp = 150
+BonusXpHintFree = 55

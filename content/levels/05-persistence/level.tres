@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="LevelResource" load_steps=7 format=3 uid="uid://b5_level_05"]
+
+[ext_resource type="Script" path="res://scripts/resources/LevelResource.cs" id="1_level"]
+[ext_resource type="Resource" path="res://content/levels/05-persistence/q1_drop_a_note.tres" id="2_q1"]
+[ext_resource type="Resource" path="res://content/levels/05-persistence/q2_append_a_line.tres" id="3_q2"]
+[ext_resource type="Resource" path="res://content/levels/05-persistence/q3_build_the_structure.tres" id="4_q3"]
+[ext_resource type="Resource" path="res://content/levels/05-persistence/q4_schedule_the_job.tres" id="5_q4"]
+[ext_resource type="Resource" path="res://content/levels/05-persistence/boss_plant_the_backdoor.tres" id="6_boss"]
+
+[resource]
+script = ExtResource("1_level")
+Number = 5
+Title = "Persistence"
+Theme = "Until now you've only read. This is the verb pivot — Set, Add, New, Register. The school of leaving something behind that survives a reboot."
+VerbFamily = "Set-* / New-* / Register-*"
+Biome = "FileSystem:, TaskScheduler:"
+Quests = Array[Resource]([ExtResource("2_q1"), ExtResource("3_q2"), ExtResource("4_q3"), ExtResource("5_q4")])
+Boss = ExtResource("6_boss")

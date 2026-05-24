@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b5_q1_drop_note"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/FileExistsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L5Q1"]
+script = ExtResource("3_obj")
+Path = "target/notes/recon.txt"
+MustContain = "RECON-MARK-7-7"
+
+[sub_resource type="Resource" id="Hint_L5Q1_1"]
+script = ExtResource("2_hint")
+Text = "`Set-Content` writes a string to a file. `Set-Content -Path foo.txt -Value 'bar'` (or pipe a string into it)."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L5Q1_2"]
+script = ExtResource("2_hint")
+Text = "If the parent folder doesn't exist, Set-Content will fail. Create it first with `New-Item -ItemType Directory target/notes -Force`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L5Q1_3"]
+script = ExtResource("2_hint")
+Text = "Full: `New-Item -ItemType Directory target/notes -Force; Set-Content -Path target/notes/recon.txt -Value 'RECON-MARK-7-7'`."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L5_q1_drop_a_note"
+Title = "Drop a Note"
+Narrative = "You've been reading the target. Now write. Drop a marker file at `target/notes/recon.txt` containing `RECON-MARK-7-7` so your handler knows you got in. Set-Content is your friend."
+VfsFixtures = {}
+AllowedCmdlets = PackedStringArray("Set-Content", "New-Item", "Get-Help")
+MockModulePaths = PackedStringArray()
+Objective = SubResource("Objective_L5Q1")
+Hints = Array[Resource]([SubResource("Hint_L5Q1_1"), SubResource("Hint_L5Q1_2"), SubResource("Hint_L5Q1_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Set-Content", "New-Item")
+Xp = 110
+BonusXpHintFree = 45

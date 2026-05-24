@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="BossResource" load_steps=8 format=3 uid="uid://b5_boss_plant_backdoor"]
+
+[ext_resource type="Script" path="res://scripts/resources/BossResource.cs" id="1_boss"]
+[ext_resource type="Script" path="res://scripts/resources/MultiStepObjective.cs" id="2_multi"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_out"]
+[ext_resource type="Script" path="res://scripts/resources/FileExistsObjective.cs" id="4_file"]
+
+[sub_resource type="Resource" id="Step1_dropscript"]
+script = ExtResource("4_file")
+Path = "target/payloads/helper/obsidian_helper.ps1"
+MustContain = "BACKDOOR_v2"
+
+[sub_resource type="Resource" id="Step2_register"]
+script = ExtResource("3_out")
+Needle = "REGISTERED ScheduledTask \"obsidian_helper\""
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="MultiStep_backdoor"]
+script = ExtResource("2_multi")
+Steps = Array[Resource]([SubResource("Step1_dropscript"), SubResource("Step2_register")])
+
+[resource]
+script = ExtResource("1_boss")
+Id = "L5_boss_plant_the_backdoor"
+Title = "Plant the Backdoor"
+AdversaryName = "Federal HQ Compliance Scanner"
+IntroText = "Time to leave something behind. The Federal HQ compliance scanner sweeps for new scheduled tasks every 6 hours — but only flags ones registered under flagged folder names. We're using `obsidian_helper`, which is on the whitelist.
+
+Two stages: (1) drop the payload script at `target/payloads/helper/obsidian_helper.ps1` (must contain `BACKDOOR_v2` as a tag we can verify later), (2) register a scheduled task named exactly `obsidian_helper` that runs it. The mock prints REGISTERED ScheduledTask \"obsidian_helper\" on success — that's the gating marker."
+VfsFixtures = {}
+MockModulePaths = PackedStringArray("res://mock-modules/MockScheduledTask")
+Objective = SubResource("MultiStep_backdoor")
+TraceTimerSeconds = 0
+BaseXp = 450

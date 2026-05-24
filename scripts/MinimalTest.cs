@@ -84,15 +84,31 @@ public partial class MinimalTest : Node
         await quests.OnPlayerCommandResult("...", await runner.RunAsync("Invoke-WebRequest https://crl.obsidian.internal/v2/auth"));
         if (!_completions.Contains(l4.Boss.Id)) { Fail("L4 boss not finished"); return; }
 
+        // Level 5 — persistence. First level the player WRITES to the sandbox.
+        var l5 = l4.NextLevel ?? GD.Load<LevelResource>("res://content/levels/05-persistence/level.tres");
+        if (l5 == null) { Fail("L5 null"); return; }
+
+        if (!await Run(l5.Quests[0], runner, quests, "New-Item -ItemType Directory target/notes -Force | Out-Null; Set-Content -Path target/notes/recon.txt -Value 'RECON-MARK-7-7'")) { Fail("L5Q1"); return; }
+        if (!await Run(l5.Quests[1], runner, quests, "Add-Content -Path target/journal.log -Value 'PIVOT-EAST-DAY-2'")) { Fail("L5Q2"); return; }
+        if (!await Run(l5.Quests[2], runner, quests, "New-Item -ItemType Directory target/payloads/win/x64 -Force | Out-Null; Set-Content target/payloads/win/x64/loader.json -Value '{\"loader_id\":\"v3\"}'")) { Fail("L5Q3"); return; }
+        if (!await Run(l5.Quests[3], runner, quests, "$a = New-ScheduledTaskAction -Execute pwsh -Argument '-File payload.ps1'; $t = New-ScheduledTaskTrigger -AtStartup; Register-ScheduledTask -TaskName 'sync-helper' -Action $a -Trigger $t")) { Fail("L5Q4"); return; }
+
+        await quests.LoadBoss(l5.Boss!);
+        await quests.OnPlayerCommandResult("...", await runner.RunAsync("New-Item -ItemType Directory target/payloads/helper -Force | Out-Null; Set-Content -Path target/payloads/helper/obsidian_helper.ps1 -Value 'BACKDOOR_v2 - placeholder'"));
+        if (_completions.Contains(l5.Boss!.Id)) { Fail("L5 boss too early after stage 1"); return; }
+        await quests.OnPlayerCommandResult("...", await runner.RunAsync("$a = New-ScheduledTaskAction -Execute pwsh -Argument '-File target/payloads/helper/obsidian_helper.ps1'; $t = New-ScheduledTaskTrigger -AtStartup; Register-ScheduledTask -TaskName 'obsidian_helper' -Action $a -Trigger $t"));
+        if (!_completions.Contains(l5.Boss.Id)) { Fail("L5 boss not finished"); return; }
+
         // Sanity checks.
         var expectedL1Xp = l1.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l1.Boss.BaseXp;
         var expectedL2Xp = l2.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l2.Boss.BaseXp;
         var expectedL3Xp = l3.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l3.Boss.BaseXp;
         var expectedL4Xp = l4.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l4.Boss.BaseXp;
-        var expectedTotal = expectedL1Xp + expectedL2Xp + expectedL3Xp + expectedL4Xp;
-        if (state.Xp != expectedTotal) { Fail($"XP mismatch: {state.Xp} != {expectedTotal} (L1={expectedL1Xp} + L2={expectedL2Xp} + L3={expectedL3Xp} + L4={expectedL4Xp})"); return; }
-        if (state.CompletedQuests.Count != 16) { Fail($"expected 16 quests, got {state.CompletedQuests.Count}"); return; }
-        if (state.CompletedBosses.Count != 4) { Fail($"expected 4 bosses, got {state.CompletedBosses.Count}"); return; }
+        var expectedL5Xp = l5.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l5.Boss.BaseXp;
+        var expectedTotal = expectedL1Xp + expectedL2Xp + expectedL3Xp + expectedL4Xp + expectedL5Xp;
+        if (state.Xp != expectedTotal) { Fail($"XP mismatch: {state.Xp} != {expectedTotal}"); return; }
+        if (state.CompletedQuests.Count != 20) { Fail($"expected 20 quests, got {state.CompletedQuests.Count}"); return; }
+        if (state.CompletedBosses.Count != 5) { Fail($"expected 5 bosses, got {state.CompletedBosses.Count}"); return; }
 
         GD.Print($"[Test] FINAL  xp={state.Xp}  quests={state.CompletedQuests.Count}  bosses={state.CompletedBosses.Count}");
 
@@ -105,7 +121,7 @@ public partial class MinimalTest : Node
         GD.Print("[Test] save/load round-trip OK");
 
         state.ResetForDevelopment();
-        GD.Print("[Test] PASS — Levels 1 + 2 + 3 + 4 walkthrough green");
+        GD.Print("[Test] PASS — Levels 1 through 5 walkthrough green");
         GetTree().Quit(0);
     }
 

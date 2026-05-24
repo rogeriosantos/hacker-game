@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b5_q2_append"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/FileExistsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L5Q2"]
+script = ExtResource("3_obj")
+Path = "target/journal.log"
+MustContain = "PIVOT-EAST-DAY-2"
+
+[sub_resource type="Resource" id="Hint_L5Q2_1"]
+script = ExtResource("2_hint")
+Text = "Don't use Set-Content here — it OVERWRITES the file. `Add-Content` appends a line at the end."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L5Q2_2"]
+script = ExtResource("2_hint")
+Text = "`Add-Content -Path target/journal.log -Value 'PIVOT-EAST-DAY-2'`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L5Q2_3"]
+script = ExtResource("2_hint")
+Text = "If you accidentally used Set-Content and wiped the journal, that's OK — the objective only cares the marker is there. But notice the lesson: Set vs Add."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L5_q2_append_a_line"
+Title = "Append a Line"
+Narrative = "The target's `target/journal.log` already has prior entries — your handler needs you to APPEND a new line `PIVOT-EAST-DAY-2`, not overwrite the file. Add-Content vs Set-Content matters."
+VfsFixtures = {
+"target/journal.log": "DAY-1 first ingress\nDAY-1 mapped registry\n"
+}
+AllowedCmdlets = PackedStringArray("Add-Content", "Set-Content", "Get-Content", "Get-Help")
+MockModulePaths = PackedStringArray()
+Objective = SubResource("Objective_L5Q2")
+Hints = Array[Resource]([SubResource("Hint_L5Q2_1"), SubResource("Hint_L5Q2_2"), SubResource("Hint_L5Q2_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Add-Content")
+Xp = 130
+BonusXpHintFree = 50
