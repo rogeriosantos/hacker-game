@@ -1,7 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://b8j7m3yqp4xnh"]
+[gd_scene load_steps=8 format=3 uid="uid://b8j7m3yqp4xnh"]
 
 [ext_resource type="Shader" path="res://shaders/matrix_rain.gdshader" id="1_rain"]
 [ext_resource type="Script" path="res://scripts/ui/TerminalController.cs" id="2_term_ctrl"]
+[ext_resource type="Script" path="res://scripts/ui/QuestSequencer.cs" id="3_sequencer"]
+[ext_resource type="Resource" path="res://content/levels/01-recon/level.tres" id="4_level01"]
+[ext_resource type="Script" path="res://scripts/ui/HudController.cs" id="5_hud"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rain"]
 shader = ExtResource("1_rain")
@@ -14,6 +17,12 @@ shader_parameter/head_color = Color(0.8, 1, 0.85, 1)
 shader_parameter/bg_color = Color(0, 0.02, 0, 1)
 shader_parameter/trail_length = 18.0
 shader_parameter/flicker_amount = 0.35
+
+[sub_resource type="LabelSettings" id="LabelSettings_title"]
+font_size = 22
+font_color = Color(0.85, 1, 0.85, 1)
+outline_size = 4
+outline_color = Color(0, 0, 0, 0.7)
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -32,6 +41,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="QuestSequencer" type="Node" parent="."]
+script = ExtResource("3_sequencer")
+StartingLevel = ExtResource("4_level01")
+
 [node name="TerminalFrame" type="PanelContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
@@ -39,10 +52,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -560.0
-offset_top = -250.0
-offset_right = 560.0
-offset_bottom = 250.0
+offset_left = -540.0
+offset_top = -260.0
+offset_right = 200.0
+offset_bottom = 260.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -60,3 +73,93 @@ size_flags_vertical = 3
 
 [node name="TerminalController" type="Node" parent="TerminalFrame/Margin/Terminal"]
 script = ExtResource("2_term_ctrl")
+
+[node name="Hud" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("5_hud")
+LevelLabelPath = NodePath("TopBar/LevelLabel")
+XpLabelPath = NodePath("TopBar/XpLabel")
+QuestTitleLabelPath = NodePath("Sidebar/Margin/VBox/QuestTitle")
+QuestNarrativeLabelPath = NodePath("Sidebar/Margin/VBox/QuestNarrative")
+HintButtonPath = NodePath("Sidebar/Margin/VBox/HintButton")
+HintTextLabelPath = NodePath("Sidebar/Margin/VBox/HintText")
+StatusLabelPath = NodePath("TopBar/StatusLabel")
+SequencerPath = NodePath("../QuestSequencer")
+
+[node name="TopBar" type="HBoxContainer" parent="Hud"]
+layout_mode = 1
+anchor_right = 1.0
+offset_left = 20.0
+offset_top = 16.0
+offset_right = -20.0
+offset_bottom = 48.0
+theme_override_constants/separation = 32
+
+[node name="LevelLabel" type="Label" parent="Hud/TopBar"]
+layout_mode = 2
+text = "LEVEL 1"
+label_settings = SubResource("LabelSettings_title")
+
+[node name="XpLabel" type="Label" parent="Hud/TopBar"]
+layout_mode = 2
+text = "XP 0"
+label_settings = SubResource("LabelSettings_title")
+
+[node name="StatusLabel" type="Label" parent="Hud/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = ""
+label_settings = SubResource("LabelSettings_title")
+horizontal_alignment = 2
+
+[node name="Sidebar" type="PanelContainer" parent="Hud"]
+layout_mode = 1
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -360.0
+offset_top = 80.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+mouse_filter = 1
+
+[node name="Margin" type="MarginContainer" parent="Hud/Sidebar"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="Hud/Sidebar/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="QuestTitle" type="Label" parent="Hud/Sidebar/Margin/VBox"]
+layout_mode = 2
+text = "..."
+label_settings = SubResource("LabelSettings_title")
+autowrap_mode = 3
+
+[node name="QuestNarrative" type="Label" parent="Hud/Sidebar/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "..."
+autowrap_mode = 3
+
+[node name="HintButton" type="Button" parent="Hud/Sidebar/Margin/VBox"]
+layout_mode = 2
+text = "Reveal hint"
+
+[node name="HintText" type="Label" parent="Hud/Sidebar/Margin/VBox"]
+layout_mode = 2
+text = ""
+autowrap_mode = 3
+modulate = Color(0.7, 1, 0.7, 1)

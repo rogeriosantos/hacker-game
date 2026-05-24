@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b1_q2_find_hidden"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_q2"]
+script = ExtResource("3_obj")
+Needle = ".env"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_q2_1"]
+script = ExtResource("2_hint")
+Text = "List the home directory: `Get-ChildItem home`. Notice anything missing?"
+Level = 0
+
+[sub_resource type="Resource" id="Hint_q2_2"]
+script = ExtResource("2_hint")
+Text = "Hidden files start with a dot. PowerShell hides them by default — add `-Force`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_q2_3"]
+script = ExtResource("2_hint")
+Text = "Full incantation: `Get-ChildItem home -Recurse -Force`. Recurse descends into subfolders."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "q2_find_hidden"
+Title = "The Hidden File"
+Narrative = "Intel says the target operator left a `.env` file under their home folder. Find it. Hidden files like `.env` won't show up in a default listing — you'll need to convince the shell to reveal them."
+VfsFixtures = {
+"home/alice/notes.txt": "groceries: milk, bread, hash function",
+"home/bob/readme.md": "TODO: rotate secrets",
+"home/bob/.env": "API_KEY=h4ck3d-the-pl4n3t\nDB_PASS=correcthorsebatterystaple",
+"home/bob/projects/v1.txt": "old draft"
+}
+AllowedCmdlets = PackedStringArray("Get-ChildItem", "Get-Help")
+MockModulePaths = PackedStringArray()
+Objective = SubResource("Objective_q2")
+Hints = Array[Resource]([SubResource("Hint_q2_1"), SubResource("Hint_q2_2"), SubResource("Hint_q2_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Get-ChildItem")
+Xp = 75
+BonusXpHintFree = 30

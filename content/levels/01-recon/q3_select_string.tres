@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b1_q3_select_string"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_q3"]
+script = ExtResource("3_obj")
+Needle = "neon-cobra-77"
+IsRegex = false
+CaseSensitive = true
+
+[sub_resource type="Resource" id="Hint_q3_1"]
+script = ExtResource("2_hint")
+Text = "The log is too big to read by eye. PowerShell has a cmdlet for greping text — `Select-String`."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_q3_2"]
+script = ExtResource("2_hint")
+Text = "The label is `PASSPHRASE=`. Search for that prefix: `Select-String -Path logs/access.log -Pattern PASSPHRASE`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_q3_3"]
+script = ExtResource("2_hint")
+Text = "Once you see the line, the passphrase is whatever comes after the `=`. Just type it (or pipe through Out-String, the match line shows it directly)."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "q3_select_string"
+Title = "Needle in the Log"
+Narrative = "An attacker dropped an access log. Buried inside is a single line containing a passphrase. Find the passphrase — your output must contain it verbatim."
+VfsFixtures = {
+"logs/access.log": "2026-05-21 00:00:01 GET /index.html 200\n2026-05-21 00:00:02 GET /login 200\n2026-05-21 00:00:03 POST /login 401\n2026-05-21 00:00:04 POST /login 401\n2026-05-21 00:00:05 POST /login 200\n2026-05-21 00:00:06 GET /admin 403\n2026-05-21 00:00:07 GET /admin 403\n# debug: PASSPHRASE=neon-cobra-77 (test rotation, do not commit)\n2026-05-21 00:00:08 GET /admin 200\n2026-05-21 00:00:09 GET /logout 200\n2026-05-21 00:00:10 GET /index.html 200"
+}
+AllowedCmdlets = PackedStringArray("Select-String", "Get-Content", "Get-ChildItem", "Get-Help")
+MockModulePaths = PackedStringArray()
+Objective = SubResource("Objective_q3")
+Hints = Array[Resource]([SubResource("Hint_q3_1"), SubResource("Hint_q3_2"), SubResource("Hint_q3_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Select-String", "Get-Content")
+Xp = 100
+BonusXpHintFree = 40

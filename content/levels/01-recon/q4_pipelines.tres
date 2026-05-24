@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b1_q4_pipelines"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_q4"]
+script = ExtResource("3_obj")
+Needle = "credentials.key"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_q4_1"]
+script = ExtResource("2_hint")
+Text = "The `|` (pipe) sends one cmdlet's output into the next as input. Start by listing the data folder."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_q4_2"]
+script = ExtResource("2_hint")
+Text = "Filter for `.key` files: `Get-ChildItem data | Where-Object Name -Like '*.key'`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_q4_3"]
+script = ExtResource("2_hint")
+Text = "To see only the names: `Get-ChildItem data | Where-Object Name -Like '*.key' | Select-Object -ExpandProperty Name`."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "q4_pipelines"
+Title = "The Pipe"
+Narrative = "The shell's superpower is chaining commands with `|`. List the files in `data/`, keep only the ones ending in `.key`. Your output should include `credentials.key` and nothing irrelevant."
+VfsFixtures = {
+"data/credentials.key": "BEGIN PRIVATE KEY...",
+"data/private.key": "BEGIN PRIVATE KEY...",
+"data/notes.txt": "remember to rotate keys",
+"data/old.bak": "previous backup",
+"data/README.md": "this folder is sensitive"
+}
+AllowedCmdlets = PackedStringArray("Get-ChildItem", "Where-Object", "Select-Object", "Get-Help")
+MockModulePaths = PackedStringArray()
+Objective = SubResource("Objective_q4")
+Hints = Array[Resource]([SubResource("Hint_q4_1"), SubResource("Hint_q4_2"), SubResource("Hint_q4_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Where-Object", "Select-Object")
+Xp = 125
+BonusXpHintFree = 50

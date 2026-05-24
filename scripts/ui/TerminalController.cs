@@ -4,6 +4,8 @@ using HackerGame.Autoload;
 
 namespace HackerGame.UI;
 
+// ReSharper disable once UnusedType.Global
+
 /// <summary>
 /// Thin line-editor on top of godot-xterm's Terminal node. Captures user
 /// keystrokes via the `data_sent` signal (the terminal does not auto-echo —
@@ -26,6 +28,7 @@ public partial class TerminalController : Node
 
     private Node _terminal = default!;
     private PowerShellRunner _runner = default!;
+    private QuestManager _questManager = default!;
     private readonly StringBuilder _buffer = new();
     private readonly List<string> _history = new();
     private int _historyCursor = -1;
@@ -35,6 +38,7 @@ public partial class TerminalController : Node
     {
         _terminal = GetParent();
         _runner = GetNode<PowerShellRunner>("/root/PowerShellRunner");
+        _questManager = GetNode<QuestManager>("/root/QuestManager");
 
         _terminal.Connect("data_sent", new Callable(this, nameof(OnDataSent)));
 
@@ -157,6 +161,13 @@ public partial class TerminalController : Node
                 var color = result.Succeeded ? "" : "\x1b[31m";
                 var reset = result.Succeeded ? "" : "\x1b[0m";
                 Write(color + result.Rendered.Replace("\n", "\r\n") + reset + "\r\n");
+            }
+
+            // Dispatch to the active quest, if any. The QuestManager handles
+            // objective verification and emits QuestCompleted on satisfy.
+            if (_questManager.IsActive)
+            {
+                await _questManager.OnPlayerCommandResult(trimmed, result);
             }
         }
         finally

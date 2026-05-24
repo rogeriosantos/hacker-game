@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b1_q1_get_help"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_q1"]
+script = ExtResource("3_obj")
+Needle = "Get-ChildItem"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_q1_1"]
+script = ExtResource("2_hint")
+Text = "PowerShell ships a built-in help system. Try `Get-Help` followed by any cmdlet name."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_q1_2"]
+script = ExtResource("2_hint")
+Text = "Specifically: `Get-Help Get-ChildItem` — it'll show you what that cmdlet does."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_q1_3"]
+script = ExtResource("2_hint")
+Text = "Or just `Get-Command Get-Ch*` to see what matches the Get-Ch prefix."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "q1_get_help"
+Title = "First Contact"
+Narrative = "You're holding a shell for the first time. Find out what `Get-ChildItem` does. The PowerShell help system is built in — make it talk."
+AllowedCmdlets = PackedStringArray("Get-Help", "Get-Command")
+MockModulePaths = PackedStringArray()
+Objective = SubResource("Objective_q1")
+Hints = Array[Resource]([SubResource("Hint_q1_1"), SubResource("Hint_q1_2"), SubResource("Hint_q1_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Get-Help", "Get-Command")
+Xp = 50
+BonusXpHintFree = 25
+metadata/_custom_type_script = "uid://b3kwn6040t7na"
