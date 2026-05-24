@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="BossResource" load_steps=7 format=3 uid="uid://b1_boss_first_breach"]
+
+[ext_resource type="Script" path="res://scripts/resources/BossResource.cs" id="1_boss"]
+[ext_resource type="Script" path="res://scripts/resources/MultiStepObjective.cs" id="2_multi"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_out"]
+
+[sub_resource type="Resource" id="Step1_findflag"]
+script = ExtResource("3_out")
+Needle = ".flag"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Step2_extract"]
+script = ExtResource("3_out")
+Needle = "zz0-deadbeef-42"
+IsRegex = false
+CaseSensitive = true
+
+[sub_resource type="Resource" id="MultiStep_firstbreach"]
+script = ExtResource("2_multi")
+Steps = Array[Resource]([SubResource("Step1_findflag"), SubResource("Step2_extract")])
+
+[resource]
+script = ExtResource("1_boss")
+Id = "boss_first_breach"
+Title = "First Breach"
+AdversaryName = "CIA SOC Analyst"
+IntroText = "You're at the gate. The CIA SOC analyst is asleep at the wheel. Buried under /target/ is a hidden flag file — find it, then crack the token inside.
+
+Two stages. No hints. The clock is the only thing watching."
+VfsFixtures = {
+"target/system/.flag": "TOKEN=zz0-deadbeef-42\nROTATED=2026-04-30\nHOLDER=svc-pipeline-bot",
+"target/system/readme.md": "internal services",
+"target/system/config/app.yaml": "env: prod\nversion: 4.2.1",
+"target/users/jrahman/.bashrc": "export PATH=/usr/local/bin:$PATH",
+"target/users/jrahman/notes.md": "todo: rotate keys",
+"target/logs/access.log": "2026-05-01 12:00:01 GET /api/health 200\n2026-05-01 12:00:02 GET /api/health 200",
+"target/decoy/redherring.flag.bak": "not the real flag"
+}
+MockModulePaths = PackedStringArray()
+Objective = SubResource("MultiStep_firstbreach")
+TraceTimerSeconds = 0
+BaseXp = 200

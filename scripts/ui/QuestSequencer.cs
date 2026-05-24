@@ -14,6 +14,7 @@ namespace HackerGame.UI;
 public partial class QuestSequencer : Node
 {
     [Export] public LevelResource? StartingLevel { get; set; }
+    [Export] public PackedScene? BossIntroScene { get; set; }
 
     [Signal] public delegate void SequenceChangedEventHandler();
 
@@ -78,6 +79,7 @@ public partial class QuestSequencer : Node
             CurrentQuest = null;
             CurrentBoss = CurrentLevel.Boss;
             await _questManager.LoadBoss(CurrentLevel.Boss);
+            ShowBossIntro(CurrentLevel.Boss);
             EmitSignal(SignalName.SequenceChanged);
             return;
         }
@@ -99,5 +101,14 @@ public partial class QuestSequencer : Node
         // Re-evaluate after the active objective satisfies. Defer a frame to
         // let signals fan out before reconfiguring the runner.
         CallDeferred(nameof(StartCurrentLevel));
+    }
+
+    private void ShowBossIntro(BossResource boss)
+    {
+        if (BossIntroScene == null) return;
+        var instance = BossIntroScene.Instantiate<BossIntro>();
+        // Add to the scene tree's root so the intro overlays everything else.
+        GetTree().Root.AddChild(instance);
+        instance.Configure(boss);
     }
 }

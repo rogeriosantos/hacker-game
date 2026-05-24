@@ -5,11 +5,14 @@ using HackerGame.Resources;
 namespace HackerGame;
 
 /// <summary>
-/// End-to-end integration test: load Q1, run a satisfying command, verify the
-/// objective fires QuestCompleted. Exits 0 on full green.
+/// Full Level 1 walkthrough integration test. Exercises the engine end-to-end:
+/// load Q1 through Q4 + boss, run the "expected" command for each, verify
+/// QuestCompleted fires and GameState updates.
 /// </summary>
 public partial class MinimalTest : Node
 {
+    private readonly List<string> _completions = new();
+
     public override async void _Ready()
     {
         var runner = GetNode<PowerShellRunner>("/root/PowerShellRunner");
@@ -17,33 +20,65 @@ public partial class MinimalTest : Node
         var state = GetNode<GameState>("/root/GameState");
 
         state.ResetForDevelopment();
+        quests.QuestCompleted += id => { _completions.Add(id); GD.Print($"[Test]  + completed: {id}"); };
 
-        var q1 = GD.Load<QuestResource>("res://content/levels/01-recon/q1_get_help.tres");
-        if (q1 == null) { GD.PrintErr("[Test] could not load Q1"); GetTree().Quit(1); return; }
-        GD.Print($"[Test] loaded Q1: {q1.Id} '{q1.Title}'");
+        var level = GD.Load<LevelResource>("res://content/levels/01-recon/level.tres");
+        if (level == null) { Fail("level load null"); return; }
 
-        var completed = false;
-        quests.QuestCompleted += id => { GD.Print($"[Test] QuestCompleted fired: {id}"); completed = true; };
+        // Q1: discover Get-Help. Output must contain "Get-ChildItem".
+        if (!await Run(level.Quests[0], runner, quests, "Get-Help Get-ChildItem"))
+            { Fail("Q1 did not complete"); return; }
 
-        await quests.LoadQuest(q1);
-        GD.Print($"[Test] quest active, sandbox={quests.ActiveSandboxDir}");
+        // Q2: find hidden .env. -Recurse -Force discovers /home/bob/.env.
+        if (!await Run(level.Quests[1], runner, quests, "Get-ChildItem -Recurse -Force"))
+            { Fail("Q2 did not complete"); return; }
 
-        // Q1 wants the player to discover Get-Help. Running `Get-Help Get-ChildItem`
-        // emits help text that contains "Get-ChildItem" — satisfies OutputContainsObjective.
-        var result = await runner.RunAsync("Get-Help Get-ChildItem");
-        GD.Print($"[Test] Get-Help ran, stdout starts with: {result.Stdout.Substring(0, System.Math.Min(80, result.Stdout.Length)).Replace("\n", " | ")}");
+        // Q3: select-string for PASSPHRASE.
+        if (!await Run(level.Quests[2], runner, quests, "Select-String -Path logs/access.log -Pattern PASSPHRASE"))
+            { Fail("Q3 did not complete"); return; }
 
-        await quests.OnPlayerCommandResult("Get-Help Get-ChildItem", result);
+        // Q4: pipelines — filter for *.key.
+        if (!await Run(level.Quests[3], runner, quests, "Get-ChildItem data | Where-Object Name -Like '*.key'"))
+            { Fail("Q4 did not complete"); return; }
 
-        if (completed && state.CompletedQuests.Contains(q1.Id) && state.Xp >= q1.Xp)
-        {
-            GD.Print($"[Test] PASS — Q1 completed, XP={state.Xp}");
-            GetTree().Quit(0);
-        }
-        else
-        {
-            GD.Print($"[Test] FAIL — completed={completed} state.HasQ1={state.CompletedQuests.Contains(q1.Id)} xp={state.Xp}");
-            GetTree().Quit(1);
-        }
+        // BOSS: stage 1 = find a .flag file
+        await quests.LoadBoss(level.Boss!);
+        GD.Print($"[Test] BOSS loaded: {level.Boss!.Id} sandbox={quests.ActiveSandboxDir}");
+
+        var s1 = await runner.RunAsync("Get-ChildItem -Recurse -Force | Where-Object Name -Like '*.flag'");
+        await quests.OnPlayerCommandResult("...", s1);
+        if (_completions.Contains(level.Boss.Id))
+            { Fail("Boss completed too early (stage1 alone should not finish multi-step)"); return; }
+
+        var s2 = await runner.RunAsync("Get-Content target/system/.flag");
+        await quests.OnPlayerCommandResult("...", s2);
+
+        if (!_completions.Contains(level.Boss.Id))
+            { Fail($"Boss did not complete after stage 2 — last stdout: {s2.Stdout.Trim()}"); return; }
+
+        GD.Print($"[Test] FINAL  level={state.Level} xp={state.Xp}");
+        GD.Print($"[Test] FINAL  completed quests = {string.Join(", ", state.CompletedQuests)}");
+        GD.Print($"[Test] FINAL  completed bosses = {string.Join(", ", state.CompletedBosses)}");
+        var expectedXp = level.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + level.Boss.BaseXp;
+        if (state.Xp != expectedXp)
+            { Fail($"XP mismatch — expected {expectedXp}, got {state.Xp}"); return; }
+        GD.Print("[Test] PASS — full Level 1 walkthrough green");
+        GetTree().Quit(0);
+    }
+
+    private async Task<bool> Run(QuestResource? quest, PowerShellRunner runner, QuestManager quests, string command)
+    {
+        if (quest == null) return false;
+        await quests.LoadQuest(quest);
+        GD.Print($"[Test] running {quest.Id}: {command}");
+        var result = await runner.RunAsync(command);
+        await quests.OnPlayerCommandResult(command, result);
+        return _completions.Contains(quest.Id);
+    }
+
+    private void Fail(string reason)
+    {
+        GD.PrintErr($"[Test] FAIL — {reason}");
+        GetTree().Quit(1);
     }
 }

@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=3 uid="uid://b8j7m3yqp4xnh"]
+[gd_scene load_steps=9 format=3 uid="uid://b8j7m3yqp4xnh"]
 
 [ext_resource type="Shader" path="res://shaders/matrix_rain.gdshader" id="1_rain"]
 [ext_resource type="Script" path="res://scripts/ui/TerminalController.cs" id="2_term_ctrl"]
 [ext_resource type="Script" path="res://scripts/ui/QuestSequencer.cs" id="3_sequencer"]
 [ext_resource type="Resource" path="res://content/levels/01-recon/level.tres" id="4_level01"]
 [ext_resource type="Script" path="res://scripts/ui/HudController.cs" id="5_hud"]
+[ext_resource type="PackedScene" path="res://scenes/boss_intro.tscn" id="6_bossintro"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rain"]
 shader = ExtResource("1_rain")
@@ -44,6 +45,7 @@ grow_vertical = 2
 [node name="QuestSequencer" type="Node" parent="."]
 script = ExtResource("3_sequencer")
 StartingLevel = ExtResource("4_level01")
+BossIntroScene = ExtResource("6_bossintro")
 
 [node name="TerminalFrame" type="PanelContainer" parent="."]
 layout_mode = 1

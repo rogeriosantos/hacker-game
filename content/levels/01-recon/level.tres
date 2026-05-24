@@ -1,10 +1,11 @@
-[gd_resource type="Resource" script_class="LevelResource" load_steps=6 format=3 uid="uid://b1_level_01"]
+[gd_resource type="Resource" script_class="LevelResource" load_steps=7 format=3 uid="uid://b1_level_01"]
 
 [ext_resource type="Script" path="res://scripts/resources/LevelResource.cs" id="1_level"]
 [ext_resource type="Resource" path="res://content/levels/01-recon/q1_get_help.tres" id="2_q1"]
 [ext_resource type="Resource" path="res://content/levels/01-recon/q2_find_hidden.tres" id="3_q2"]
 [ext_resource type="Resource" path="res://content/levels/01-recon/q3_select_string.tres" id="4_q3"]
 [ext_resource type="Resource" path="res://content/levels/01-recon/q4_pipelines.tres" id="5_q4"]
+[ext_resource type="Resource" path="res://content/levels/01-recon/boss_first_breach.tres" id="6_boss"]
 
 [resource]
 script = ExtResource("1_level")
@@ -14,3 +15,4 @@ Theme = "Your first shell. Get-* is the recon school: how to ask the system what
 VerbFamily = "Get-*"
 Biome = "FileSystem:\\"
 Quests = Array[Resource]([ExtResource("2_q1"), ExtResource("3_q2"), ExtResource("4_q3"), ExtResource("5_q4")])
+Boss = ExtResource("6_boss")
