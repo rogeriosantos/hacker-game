@@ -1,0 +1,48 @@
+# Godot 4 .NET
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+
+# .NET / C#
+.mono/
+bin/
+obj/
+*.csproj.user
+*.user
+*.suo
+mono_crash.*
+*.pidb
+*.booproj
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Local-only
+local/
+.env
+.env.local
+
+# Build artifacts
+build/
+dist/
+*.exe
+*.dll
+*.pdb
+!mock-modules/**/*.dll
+
+# Test output
+TestResults/
+*.trx
