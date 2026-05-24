@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b3_q4_first_kill"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L3Q4"]
+script = ExtResource("3_obj")
+Needle = "cartel-ledger"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_L3Q4_1"]
+script = ExtResource("2_hint")
+Text = "Stop-Process kills a process by Id (-Id) or Name (-Name). Use -PassThru to print what you killed."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L3Q4_2"]
+script = ExtResource("2_hint")
+Text = "Find the PID first: `Get-Process | Where-Object Name -Like '*cartel*'`. The Id column is your target."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L3Q4_3"]
+script = ExtResource("2_hint")
+Text = "`Stop-Process -Id 3300 -PassThru` — the output echoes the killed PSCustomObject, which contains the name."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L3_q4_first_kill"
+Title = "First Kill"
+Narrative = "Time to make noise. The `cartel-ledger` daemon is what you're here to silence. Find its PID, then kill it. Use -PassThru so the output reports what you took down — that's how the objective knows."
+VfsFixtures = {}
+AllowedCmdlets = PackedStringArray("Get-Process", "Stop-Process", "Where-Object", "Get-Help")
+MockModulePaths = PackedStringArray("res://mock-modules/MockProcesses")
+Objective = SubResource("Objective_L3Q4")
+Hints = Array[Resource]([SubResource("Hint_L3Q4_1"), SubResource("Hint_L3Q4_2"), SubResource("Hint_L3Q4_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Stop-Process")
+Xp = 160
+BonusXpHintFree = 60

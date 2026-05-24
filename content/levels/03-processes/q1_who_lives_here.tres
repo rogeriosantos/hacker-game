@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b3_q1_who_lives_here"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L3Q1"]
+script = ExtResource("3_obj")
+Needle = "Sentinel.EDR"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_L3Q1_1"]
+script = ExtResource("2_hint")
+Text = "`Get-Process` lists every process the OS knows about. No arguments needed — just type it."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L3Q1_2"]
+script = ExtResource("2_hint")
+Text = "Look through the listing for anything that mentions Sentinel — that's the EDR you'll need to deal with later."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L3Q1_3"]
+script = ExtResource("2_hint")
+Text = "If the listing is long, pipe it: `Get-Process | Where-Object Name -Like '*Sentinel*'`."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L3_q1_who_lives_here"
+Title = "Who Lives Here"
+Narrative = "You're on the target now. Before you do anything, find out what's running. EDR? AV? A logging daemon you should avoid? Map the process list and find anything that smells like an endpoint defender."
+VfsFixtures = {}
+AllowedCmdlets = PackedStringArray("Get-Process", "Where-Object", "Get-Help")
+MockModulePaths = PackedStringArray("res://mock-modules/MockProcesses")
+Objective = SubResource("Objective_L3Q1")
+Hints = Array[Resource]([SubResource("Hint_L3Q1_1"), SubResource("Hint_L3Q1_2"), SubResource("Hint_L3Q1_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Get-Process")
+Xp = 90
+BonusXpHintFree = 35

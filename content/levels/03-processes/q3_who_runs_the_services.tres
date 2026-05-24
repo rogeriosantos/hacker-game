@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b3_q3_services"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L3Q3"]
+script = ExtResource("3_obj")
+Needle = "OBSIDIAN.Sync"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_L3Q3_1"]
+script = ExtResource("2_hint")
+Text = "Processes are not services. Services run in the background under the service manager. `Get-Service` enumerates them."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L3Q3_2"]
+script = ExtResource("2_hint")
+Text = "Filter the running ones: `Get-Service | Where-Object Status -EQ Running`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L3Q3_3"]
+script = ExtResource("2_hint")
+Text = "OBSIDIAN.Sync should appear — that's the C2-style background daemon. Your output must include it."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L3_q3_who_runs_the_services"
+Title = "What's Listening"
+Narrative = "Background services are where adversaries hide. Find every service currently in `Running` state. OBSIDIAN.Sync should be among them — call it out."
+VfsFixtures = {}
+AllowedCmdlets = PackedStringArray("Get-Service", "Where-Object", "Get-Help")
+MockModulePaths = PackedStringArray("res://mock-modules/MockServices")
+Objective = SubResource("Objective_L3Q3")
+Hints = Array[Resource]([SubResource("Hint_L3Q3_1"), SubResource("Hint_L3Q3_2"), SubResource("Hint_L3Q3_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Get-Service")
+Xp = 130
+BonusXpHintFree = 45

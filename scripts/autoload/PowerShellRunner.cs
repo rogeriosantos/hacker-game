@@ -42,6 +42,7 @@ public partial class PowerShellRunner : Node
     private string _pwshPath = "pwsh";
     private string? _sandboxDir;
     private string[] _mockModulePaths = Array.Empty<string>();
+    private string[] _mockModuleManifests = Array.Empty<string>();
     private string[] _allowedCmdlets = Array.Empty<string>();
 
     public override void _Ready()
@@ -62,6 +63,22 @@ public partial class PowerShellRunner : Node
         _sandboxDir = sandboxDir;
         _allowedCmdlets = allowedCmdlets ?? Array.Empty<string>();
         _mockModulePaths = mockModulePaths ?? Array.Empty<string>();
+
+        // Module auto-discovery only kicks in for functions PowerShell hasn't seen yet.
+        // The real `Get-Process` and friends are already loaded by Microsoft.PowerShell.Management
+        // and would win against our mock. To shadow them we have to explicitly Import-Module
+        // before every command. Discover the manifest (.psd1) per module dir so the player
+        // can ship mocks just by dropping a folder into mock-modules/.
+        var manifests = new List<string>();
+        foreach (var dir in _mockModulePaths)
+        {
+            if (!Directory.Exists(dir)) continue;
+            foreach (var psd1 in Directory.EnumerateFiles(dir, "*.psd1", SearchOption.TopDirectoryOnly))
+            {
+                manifests.Add(psd1);
+            }
+        }
+        _mockModuleManifests = manifests.ToArray();
     }
 
     public void ResetToDefault()
@@ -69,6 +86,7 @@ public partial class PowerShellRunner : Node
         _sandboxDir = null;
         _allowedCmdlets = Array.Empty<string>();
         _mockModulePaths = Array.Empty<string>();
+        _mockModuleManifests = Array.Empty<string>();
     }
 
     public async Task<PSResult> RunAsync(string command, int timeoutMs = 8000, CancellationToken ct = default)
@@ -156,10 +174,18 @@ public partial class PowerShellRunner : Node
         // progression, and Pester tests give the player a clear "your output didn't
         // satisfy the goal" instead of a hard wall. Switch to a constrained script
         // wrapper when a quest design actually requires it.
-        return
-            "$PSStyle.OutputRendering = 'PlainText'\n" +
-            "$ErrorActionPreference = 'Continue'\n" +
-            command + "\n";
+        var sb = new StringBuilder();
+        sb.AppendLine("$PSStyle.OutputRendering = 'PlainText'");
+        sb.AppendLine("$ErrorActionPreference = 'Continue'");
+        // Import mock modules explicitly so our functions shadow the real cmdlets
+        // (auto-discovery alone wouldn't beat already-loaded core cmdlets).
+        foreach (var manifest in _mockModuleManifests)
+        {
+            var escaped = manifest.Replace("'", "''");
+            sb.AppendLine($"Import-Module '{escaped}' -Force -Global -DisableNameChecking -WarningAction SilentlyContinue -ErrorAction SilentlyContinue");
+        }
+        sb.AppendLine(command);
+        return sb.ToString();
     }
 
     // Match terminal-mode escapes pwsh emits at startup/shutdown but the embedded

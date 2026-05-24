@@ -182,9 +182,16 @@ public partial class QuestManager : Node
 
     private void ResolveAndConfigureRunner(string sandboxDir, string[] allowed, string[] mockPaths)
     {
-        // Convert sandbox-relative mock paths to absolute.
+        // MockModulePaths support three shapes:
+        //   res://...   shipped with the game — globalized to the project dir
+        //   absolute    used as-is
+        //   relative    relative to the per-quest sandbox dir
         var resolved = (mockPaths ?? System.Array.Empty<string>())
-            .Select(p => Path.IsPathRooted(p) ? p : Path.Combine(sandboxDir, p))
+            .Select(p => p.StartsWith("res://", System.StringComparison.Ordinal)
+                ? ProjectSettings.GlobalizePath(p)
+                : Path.IsPathRooted(p)
+                    ? p
+                    : Path.Combine(sandboxDir, p))
             .Where(Directory.Exists)
             .ToArray();
         _runner.ConfigureForQuest(sandboxDir, allowed, resolved);

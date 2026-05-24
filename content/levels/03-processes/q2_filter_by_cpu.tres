@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b3_q2_filter_by_cpu"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L3Q2"]
+script = ExtResource("3_obj")
+Needle = "chrome"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_L3Q2_1"]
+script = ExtResource("2_hint")
+Text = "Pipe Get-Process into Where-Object and filter on the CPU property. Burner threshold is 20."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L3Q2_2"]
+script = ExtResource("2_hint")
+Text = "`Get-Process | Where-Object CPU -gt 20`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L3Q2_3"]
+script = ExtResource("2_hint")
+Text = "You're looking for a high-CPU consumer that isn't a service. `chrome` should show up — that's the answer the objective wants in your output."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L3_q2_filter_by_cpu"
+Title = "Cycles Don't Lie"
+Narrative = "Defenders' processes don't always announce themselves by name — they spike CPU. Filter the process list for anything burning more than 20 CPU units. The browser is a famous offender. Your output must include `chrome`."
+VfsFixtures = {}
+AllowedCmdlets = PackedStringArray("Get-Process", "Where-Object", "Get-Help")
+MockModulePaths = PackedStringArray("res://mock-modules/MockProcesses")
+Objective = SubResource("Objective_L3Q2")
+Hints = Array[Resource]([SubResource("Hint_L3Q2_1"), SubResource("Hint_L3Q2_2"), SubResource("Hint_L3Q2_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Where-Object")
+Xp = 110
+BonusXpHintFree = 40

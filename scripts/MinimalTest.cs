@@ -52,13 +52,29 @@ public partial class MinimalTest : Node
         await quests.OnPlayerCommandResult("...", await runner.RunAsync("Get-Content target/registry/HKLM/SECURITY/.master/seed.bin"));
         if (!_completions.Contains(l2.Boss.Id)) { Fail("L2 boss not finished"); return; }
 
+        // Level 3 — process control + mock modules shipped via res://mock-modules.
+        var l3 = l2.NextLevel ?? GD.Load<LevelResource>("res://content/levels/03-processes/level.tres");
+        if (l3 == null) { Fail("L3 null"); return; }
+
+        if (!await Run(l3.Quests[0], runner, quests, "Get-Process")) { Fail("L3Q1"); return; }
+        if (!await Run(l3.Quests[1], runner, quests, "Get-Process | Where-Object CPU -gt 20")) { Fail("L3Q2"); return; }
+        if (!await Run(l3.Quests[2], runner, quests, "Get-Service | Where-Object Status -EQ Running")) { Fail("L3Q3"); return; }
+        if (!await Run(l3.Quests[3], runner, quests, "Stop-Process -Id 3300 -PassThru")) { Fail("L3Q4"); return; }
+
+        await quests.LoadBoss(l3.Boss!);
+        await quests.OnPlayerCommandResult("...", await runner.RunAsync("Get-Process | Where-Object Name -Like '*Sentinel*'"));
+        if (_completions.Contains(l3.Boss!.Id)) { Fail("L3 boss too early"); return; }
+        await quests.OnPlayerCommandResult("...", await runner.RunAsync("Stop-Process -Id 1024"));
+        if (!_completions.Contains(l3.Boss.Id)) { Fail("L3 boss not finished"); return; }
+
         // Sanity checks.
         var expectedL1Xp = l1.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l1.Boss.BaseXp;
         var expectedL2Xp = l2.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l2.Boss.BaseXp;
-        var expectedTotal = expectedL1Xp + expectedL2Xp;
-        if (state.Xp != expectedTotal) { Fail($"XP mismatch: {state.Xp} != {expectedTotal} (L1={expectedL1Xp} + L2={expectedL2Xp})"); return; }
-        if (state.CompletedQuests.Count != 8) { Fail($"expected 8 quests, got {state.CompletedQuests.Count}"); return; }
-        if (state.CompletedBosses.Count != 2) { Fail($"expected 2 bosses, got {state.CompletedBosses.Count}"); return; }
+        var expectedL3Xp = l3.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l3.Boss.BaseXp;
+        var expectedTotal = expectedL1Xp + expectedL2Xp + expectedL3Xp;
+        if (state.Xp != expectedTotal) { Fail($"XP mismatch: {state.Xp} != {expectedTotal} (L1={expectedL1Xp} + L2={expectedL2Xp} + L3={expectedL3Xp})"); return; }
+        if (state.CompletedQuests.Count != 12) { Fail($"expected 12 quests, got {state.CompletedQuests.Count}"); return; }
+        if (state.CompletedBosses.Count != 3) { Fail($"expected 3 bosses, got {state.CompletedBosses.Count}"); return; }
 
         GD.Print($"[Test] FINAL  xp={state.Xp}  quests={state.CompletedQuests.Count}  bosses={state.CompletedBosses.Count}");
 
@@ -71,7 +87,7 @@ public partial class MinimalTest : Node
         GD.Print("[Test] save/load round-trip OK");
 
         state.ResetForDevelopment();
-        GD.Print("[Test] PASS — Level 1 + Level 2 walkthrough green");
+        GD.Print("[Test] PASS — Levels 1 + 2 + 3 walkthrough green");
         GetTree().Quit(0);
     }
 

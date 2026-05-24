@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="LevelResource" load_steps=7 format=3 uid="uid://b2_level_02"]
+[gd_resource type="Resource" script_class="LevelResource" load_steps=8 format=3 uid="uid://b2_level_02"]
 
 [ext_resource type="Script" path="res://scripts/resources/LevelResource.cs" id="1_level"]
 [ext_resource type="Resource" path="res://content/levels/02-registry/q1_first_probe.tres" id="2_q1"]
@@ -6,6 +6,7 @@
 [ext_resource type="Resource" path="res://content/levels/02-registry/q3_read_the_setting.tres" id="4_q3"]
 [ext_resource type="Resource" path="res://content/levels/02-registry/q4_recursive_sweep.tres" id="5_q4"]
 [ext_resource type="Resource" path="res://content/levels/02-registry/boss_registry_whisper.tres" id="6_boss"]
+[ext_resource type="Resource" path="res://content/levels/03-processes/level.tres" id="7_next"]
 
 [resource]
 script = ExtResource("1_level")
@@ -16,3 +17,4 @@ VerbFamily = "Get-*/Test-*"
 Biome = "HKLM:\\, HKCU:\\, SECURITY:\\"
 Quests = Array[Resource]([ExtResource("2_q1"), ExtResource("3_q2"), ExtResource("4_q3"), ExtResource("5_q4")])
 Boss = ExtResource("6_boss")
+NextLevel = ExtResource("7_next")

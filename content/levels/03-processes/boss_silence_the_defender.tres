@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="BossResource" load_steps=7 format=3 uid="uid://b3_boss_silence_defender"]
+
+[ext_resource type="Script" path="res://scripts/resources/BossResource.cs" id="1_boss"]
+[ext_resource type="Script" path="res://scripts/resources/MultiStepObjective.cs" id="2_multi"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_out"]
+
+[sub_resource type="Resource" id="Step1_findEDR"]
+script = ExtResource("3_out")
+Needle = "Sentinel.EDR"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Step2_killEDR"]
+script = ExtResource("3_out")
+Needle = "TERMINATED Sentinel.EDR"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="MultiStep_silence"]
+script = ExtResource("2_multi")
+Steps = Array[Resource]([SubResource("Step1_findEDR"), SubResource("Step2_killEDR")])
+
+[resource]
+script = ExtResource("1_boss")
+Id = "L3_boss_silence_the_defender"
+Title = "Silence the Defender"
+AdversaryName = "Sentinel.EDR (running as PID 1024)"
+IntroText = "The Sentinel EDR daemon (PID 1024) is watching every syscall. It WILL fire an alert the moment you touch anything sensitive.
+
+Two stages. Identify the process is still alive, then take it down. The kill returns a tombstone line marked [X] TERMINATED — that's how we know you hit the real EDR, not a decoy."
+VfsFixtures = {}
+MockModulePaths = PackedStringArray("res://mock-modules/MockProcesses")
+Objective = SubResource("MultiStep_silence")
+TraceTimerSeconds = 0
+BaseXp = 350

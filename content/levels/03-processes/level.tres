@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="LevelResource" load_steps=7 format=3 uid="uid://b3_level_03"]
+
+[ext_resource type="Script" path="res://scripts/resources/LevelResource.cs" id="1_level"]
+[ext_resource type="Resource" path="res://content/levels/03-processes/q1_who_lives_here.tres" id="2_q1"]
+[ext_resource type="Resource" path="res://content/levels/03-processes/q2_filter_by_cpu.tres" id="3_q2"]
+[ext_resource type="Resource" path="res://content/levels/03-processes/q3_who_runs_the_services.tres" id="4_q3"]
+[ext_resource type="Resource" path="res://content/levels/03-processes/q4_first_kill.tres" id="5_q4"]
+[ext_resource type="Resource" path="res://content/levels/03-processes/boss_silence_the_defender.tres" id="6_boss"]
+
+[resource]
+script = ExtResource("1_level")
+Number = 3
+Title = "Process Control"
+Theme = "What's running, what's listening, what you can kill. Processes and services are the verbs that the OS exposes to you in real time — Get/Stop/Start are the recon-and-act loop."
+VerbFamily = "Get-* / Stop-*"
+Biome = "Process: , Service:"
+Quests = Array[Resource]([ExtResource("2_q1"), ExtResource("3_q2"), ExtResource("4_q3"), ExtResource("5_q4")])
+Boss = ExtResource("6_boss")
