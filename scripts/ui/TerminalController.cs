@@ -4,8 +4,6 @@ using HackerGame.Autoload;
 
 namespace HackerGame.UI;
 
-// ReSharper disable once UnusedType.Global
-
 /// <summary>
 /// Thin line-editor on top of godot-xterm's Terminal node. Captures user
 /// keystrokes via the `data_sent` signal (the terminal does not auto-echo —
@@ -15,16 +13,25 @@ namespace HackerGame.UI;
 /// </summary>
 public partial class TerminalController : Node
 {
-    [Export] public string Prompt { get; set; } = "[32mhg[0m [36m>[0m ";
+    // ANSI helpers. ESC must be a real 0x1b byte for the terminal to
+    // recognize a CSI sequence; bare "[32m" prints as literal text.
+    private const string Esc      = "\x1b";
+    private const string Green    = "\x1b[32m";
+    private const string Cyan     = "\x1b[36m";
+    private const string Grey     = "\x1b[90m";
+    private const string Red      = "\x1b[31m";
+    private const string Reset    = "\x1b[0m";
+
+    [Export] public string Prompt { get; set; } = Green + "hg" + Reset + " " + Cyan + ">" + Reset + " ";
     [Export] public bool ShowBanner { get; set; } = true;
     [Export] public int MaxHistory { get; set; } = 200;
 
-    private const byte Enter      = 0x0d;
-    private const byte Backspace1 = 0x7f;
-    private const byte Backspace2 = 0x08;
-    private const byte Esc        = 0x1b;
-    private const byte Ctrl_C     = 0x03;
-    private const byte Ctrl_L     = 0x0c;
+    private const byte EnterByte     = 0x0d;
+    private const byte Backspace1    = 0x7f;
+    private const byte Backspace2    = 0x08;
+    private const byte EscByte       = 0x1b;
+    private const byte Ctrl_C        = 0x03;
+    private const byte Ctrl_L        = 0x0c;
 
     private Node _terminal = default!;
     private PowerShellRunner _runner = default!;
@@ -54,19 +61,17 @@ public partial class TerminalController : Node
 
     private void WriteBannerAndPrompt()
     {
-        string Banner =
+        // Plain ASCII banner — relies on the Terminal font, which doesn't
+        // guarantee Unicode block-drawing glyphs across all installs.
+        string banner =
             "\r\n" +
-            "[32m  ██╗  ██╗ █████╗  ██████╗██╗  ██╗███████╗██████╗     ██████╗  █████╗ ███╗   ███╗███████╗[0m\r\n" +
-            "[32m  ██║  ██║██╔══██╗██╔════╝██║ ██╔╝██╔════╝██╔══██╗   ██╔════╝ ██╔══██╗████╗ ████║██╔════╝[0m\r\n" +
-            "[32m  ███████║███████║██║     █████╔╝ █████╗  ██████╔╝   ██║  ███╗███████║██╔████╔██║█████╗  [0m\r\n" +
-            "[32m  ██╔══██║██╔══██║██║     ██╔═██╗ ██╔══╝  ██╔══██╗   ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝  [0m\r\n" +
-            "[32m  ██║  ██║██║  ██║╚██████╗██║  ██╗███████╗██║  ██║   ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗[0m\r\n" +
-            "[32m  ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝    ╚═════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝[0m\r\n" +
+            Green + "  H A C K E R   G A M E" + Reset + "\r\n" +
+            Green + "  ====================" + Reset + "\r\n" +
             "\r\n" +
-            "  [90m// codename hacker-game  //  PowerShell " + _runner.GetPSVersion() + "  //  type[0m " +
-            "[36mGet-Help[0m [90mor[0m [36mGet-Command[0m [90mto begin[0m\r\n" +
+            "  " + Grey + "// codename hacker-game  //  PowerShell " + _runner.GetPSVersion() + Reset + "\r\n" +
+            "  " + Grey + "// type " + Reset + Cyan + "Get-Help" + Reset + Grey + " or " + Reset + Cyan + "Get-Command" + Reset + Grey + " to begin" + Reset + "\r\n" +
             "\r\n";
-        Write(Banner);
+        Write(banner);
         WritePrompt();
     }
 
@@ -89,7 +94,7 @@ public partial class TerminalController : Node
             byte b = data[i];
 
             // ESC sequences: arrow keys are ESC [ A/B/C/D
-            if (b == Esc && i + 2 < data.Length && data[i + 1] == (byte)'[')
+            if (b == EscByte && i + 2 < data.Length && data[i + 1] == (byte)'[')
             {
                 var code = data[i + 2];
                 i += 2;
@@ -101,7 +106,7 @@ public partial class TerminalController : Node
 
             switch (b)
             {
-                case Enter:
+                case EnterByte:
                     Write("\r\n");
                     _ = SubmitAsync(_buffer.ToString());
                     _buffer.Clear();
@@ -157,9 +162,8 @@ public partial class TerminalController : Node
             var result = await _runner.RunAsync(trimmed);
             if (!string.IsNullOrEmpty(result.Rendered))
             {
-                // Color errors red; normal output stays default.
-                var color = result.Succeeded ? "" : "\x1b[31m";
-                var reset = result.Succeeded ? "" : "\x1b[0m";
+                var color = result.Succeeded ? "" : Red;
+                var reset = result.Succeeded ? "" : Reset;
                 Write(color + result.Rendered.Replace("\n", "\r\n") + reset + "\r\n");
             }
 

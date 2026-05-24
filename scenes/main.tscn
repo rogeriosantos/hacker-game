@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://b8j7m3yqp4xnh"]
+[gd_scene load_steps=12 format=3 uid="uid://b8j7m3yqp4xnh"]
 
 [ext_resource type="Shader" path="res://shaders/matrix_rain.gdshader" id="1_rain"]
 [ext_resource type="Script" path="res://scripts/ui/TerminalController.cs" id="2_term_ctrl"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/ui/HudController.cs" id="5_hud"]
 [ext_resource type="PackedScene" path="res://scenes/boss_intro.tscn" id="6_bossintro"]
 [ext_resource type="Shader" path="res://shaders/crt_overlay.gdshader" id="7_crt"]
+[ext_resource type="FontVariation" path="res://addons/godot_xterm/themes/fonts/regular.tres" id="8_mono"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_crt"]
 shader = ExtResource("7_crt")
@@ -81,6 +82,11 @@ theme_override_constants/margin_bottom = 12
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_fonts/normal_font = ExtResource("8_mono")
+theme_override_fonts/bold_font = ExtResource("8_mono")
+theme_override_fonts/italics_font = ExtResource("8_mono")
+theme_override_fonts/bold_italics_font = ExtResource("8_mono")
+theme_override_font_sizes/normal_font_size = 14
 
 [node name="TerminalController" type="Node" parent="TerminalFrame/Margin/Terminal"]
 script = ExtResource("2_term_ctrl")
