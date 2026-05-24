@@ -45,7 +45,7 @@ public partial class RunspaceSpikeNode : Node
     {
         try
         {
-            using var rs = RunspaceFactory.CreateRunspace(InitialSessionState.CreateDefault());
+            using var rs = RunspaceFactory.CreateRunspace(InitialSessionState.CreateDefault2());
             rs.Open();
             var version = rs.SessionStateProxy.PSVariable.GetValue("PSVersionTable") as Hashtable
                           ?? new Hashtable();
@@ -62,7 +62,7 @@ public partial class RunspaceSpikeNode : Node
     {
         try
         {
-            using var rs = RunspaceFactory.CreateRunspace(InitialSessionState.CreateDefault());
+            using var rs = RunspaceFactory.CreateRunspace(InitialSessionState.CreateDefault2());
             rs.Open();
             using var ps = PowerShell.Create();
             ps.Runspace = rs;
@@ -158,7 +158,7 @@ public partial class RunspaceSpikeNode : Node
                 }
                 """);
 
-            var iss = InitialSessionState.CreateDefault();
+            var iss = InitialSessionState.CreateDefault2();
             iss.EnvironmentVariables.Add(new SessionStateVariableEntry(
                 "PSModulePath",
                 mockDir + Path.PathSeparator + System.Environment.GetEnvironmentVariable("PSModulePath"),
@@ -208,7 +208,7 @@ public partial class RunspaceSpikeNode : Node
                 }
                 """);
 
-            var iss = InitialSessionState.CreateDefault();
+            var iss = InitialSessionState.CreateDefault2();
             iss.ImportPSModule(new[] { "Pester" });
 
             using var rs = RunspaceFactory.CreateRunspace(iss);

@@ -24,6 +24,10 @@ window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[autoload]
+
+PowerShellRunner="*res://scripts/autoload/PowerShellRunner.cs"
+
 [dotnet]
 
 project/assembly_name="HackerGame"

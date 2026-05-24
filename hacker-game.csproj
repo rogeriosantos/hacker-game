@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <RootNamespace>HackerGame</RootNamespace>
+    <!-- MUST match project.godot's [dotnet] project/assembly_name. -->
+    <AssemblyName>HackerGame</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
