@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://b8j7m3yqp4xnh"]
+[gd_scene load_steps=11 format=3 uid="uid://b8j7m3yqp4xnh"]
 
 [ext_resource type="Shader" path="res://shaders/matrix_rain.gdshader" id="1_rain"]
 [ext_resource type="Script" path="res://scripts/ui/TerminalController.cs" id="2_term_ctrl"]
@@ -6,6 +6,15 @@
 [ext_resource type="Resource" path="res://content/levels/01-recon/level.tres" id="4_level01"]
 [ext_resource type="Script" path="res://scripts/ui/HudController.cs" id="5_hud"]
 [ext_resource type="PackedScene" path="res://scenes/boss_intro.tscn" id="6_bossintro"]
+[ext_resource type="Shader" path="res://shaders/crt_overlay.gdshader" id="7_crt"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_crt"]
+shader = ExtResource("7_crt")
+shader_parameter/scanline_strength = 0.18
+shader_parameter/scanline_count = 720.0
+shader_parameter/vignette_strength = 0.45
+shader_parameter/flicker_strength = 0.04
+shader_parameter/tint = Color(0, 0.05, 0, 1)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rain"]
 shader = ExtResource("1_rain")
@@ -165,3 +174,14 @@ layout_mode = 2
 text = ""
 autowrap_mode = 3
 modulate = Color(0.7, 1, 0.7, 1)
+
+[node name="CrtOverlay" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_crt")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
