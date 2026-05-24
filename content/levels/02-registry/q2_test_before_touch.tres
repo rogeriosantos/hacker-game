@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b2_q2_test_path"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L2Q2"]
+script = ExtResource("3_obj")
+Needle = "True"
+IsRegex = false
+CaseSensitive = true
+
+[sub_resource type="Resource" id="Hint_L2Q2_1"]
+script = ExtResource("2_hint")
+Text = "`Test-Path` returns True or False — perfect for verifying a registry key before reading. It has no side effects."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L2Q2_2"]
+script = ExtResource("2_hint")
+Text = "Aim for the OBSIDIAN.LTD folder: `Test-Path target/registry/HKLM/SOFTWARE/OBSIDIAN.LTD`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L2Q2_3"]
+script = ExtResource("2_hint")
+Text = "Your output must contain the word `True`. If you got `False`, you're at the wrong path — list the folder first to navigate."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L2_q2_test_before_touch"
+Title = "Test Before You Touch"
+Narrative = "Good operators verify before reading. A bad path on a real system is noisy in logs. Use `Test-Path` to confirm the OBSIDIAN.LTD subkey exists before going further. Your output should contain `True`."
+VfsFixtures = {
+"target/registry/HKLM/SOFTWARE/OBSIDIAN.LTD/Settings/endpoint.json": "https://crl.obsidian.internal/v2/auth",
+"target/registry/HKLM/SOFTWARE/Microsoft/Windows/state.json": "{}",
+"target/registry/HKCU/Software/Discord/cache.json": "{}"
+}
+AllowedCmdlets = PackedStringArray("Test-Path", "Get-ChildItem", "Get-Help")
+MockModulePaths = PackedStringArray()
+Objective = SubResource("Objective_L2Q2")
+Hints = Array[Resource]([SubResource("Hint_L2Q2_1"), SubResource("Hint_L2Q2_2"), SubResource("Hint_L2Q2_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Test-Path")
+Xp = 90
+BonusXpHintFree = 35

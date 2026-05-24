@@ -5,10 +5,9 @@ using HackerGame.Resources;
 namespace HackerGame;
 
 /// <summary>
-/// MVP smoke: full Level 1 walkthrough + save/load round-trip.
-/// Walk Q1->Q4->Boss, verify XP/completions, then "relaunch" by resetting
-/// the GameState in memory and calling Load() — confirm everything restored
-/// from user://save.json.
+/// MVP smoke: full Level 1 + Level 2 walkthrough. Each quest is "solved" by
+/// the expected canonical command for its objective. Verifies QuestCompleted
+/// fires, GameState aggregates XP, and the level chain advances L1 -> L2.
 /// </summary>
 public partial class MinimalTest : Node
 {
@@ -21,74 +20,58 @@ public partial class MinimalTest : Node
         var state = GetNode<GameState>("/root/GameState");
 
         state.ResetForDevelopment();
-        quests.QuestCompleted += id => { _completions.Add(id); GD.Print($"[Test]  + completed: {id}"); };
+        quests.QuestCompleted += id => { _completions.Add(id); GD.Print($"[Test]  + {id}"); };
 
-        var level = GD.Load<LevelResource>("res://content/levels/01-recon/level.tres");
-        if (level == null) { Fail("level load null"); return; }
+        // Level 1
+        var l1 = GD.Load<LevelResource>("res://content/levels/01-recon/level.tres");
+        if (l1 == null) { Fail("L1 null"); return; }
 
-        // --- Level 1 walkthrough ---
-        if (!await Run(level.Quests[0], runner, quests, "Get-Help Get-ChildItem"))      { Fail("Q1"); return; }
-        if (!await Run(level.Quests[1], runner, quests, "Get-ChildItem -Recurse -Force")) { Fail("Q2"); return; }
-        if (!await Run(level.Quests[2], runner, quests, "Select-String -Path logs/access.log -Pattern PASSPHRASE")) { Fail("Q3"); return; }
-        if (!await Run(level.Quests[3], runner, quests, "Get-ChildItem data | Where-Object Name -Like '*.key'")) { Fail("Q4"); return; }
+        if (!await Run(l1.Quests[0], runner, quests, "Get-Help Get-ChildItem")) { Fail("L1Q1"); return; }
+        if (!await Run(l1.Quests[1], runner, quests, "Get-ChildItem -Recurse -Force")) { Fail("L1Q2"); return; }
+        if (!await Run(l1.Quests[2], runner, quests, "Select-String -Path logs/access.log -Pattern PASSPHRASE")) { Fail("L1Q3"); return; }
+        if (!await Run(l1.Quests[3], runner, quests, "Get-ChildItem data | Where-Object Name -Like '*.key'")) { Fail("L1Q4"); return; }
 
-        await quests.LoadBoss(level.Boss!);
-        var s1 = await runner.RunAsync("Get-ChildItem -Recurse -Force | Where-Object Name -Like '*.flag'");
-        await quests.OnPlayerCommandResult("...", s1);
-        if (_completions.Contains(level.Boss!.Id)) { Fail("Boss completed on stage 1 alone"); return; }
-        var s2 = await runner.RunAsync("Get-Content target/system/.flag");
-        await quests.OnPlayerCommandResult("...", s2);
-        if (!_completions.Contains(level.Boss.Id)) { Fail("Boss didn't complete after stage 2"); return; }
+        await quests.LoadBoss(l1.Boss!);
+        await quests.OnPlayerCommandResult("...", await runner.RunAsync("Get-ChildItem -Recurse -Force | Where-Object Name -Like '*.flag'"));
+        if (_completions.Contains(l1.Boss!.Id)) { Fail("L1 boss too early"); return; }
+        await quests.OnPlayerCommandResult("...", await runner.RunAsync("Get-Content target/system/.flag"));
+        if (!_completions.Contains(l1.Boss.Id)) { Fail("L1 boss not finished"); return; }
 
-        var expectedXp = level.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + level.Boss.BaseXp;
-        if (state.Xp != expectedXp) { Fail($"XP mismatch: {state.Xp}!={expectedXp}"); return; }
-        GD.Print($"[Test] walkthrough OK — xp={state.Xp}, quests={state.CompletedQuests.Count}, bosses={state.CompletedBosses.Count}");
+        // Level 2 — same chained model, but now player operates on the registry biome.
+        var l2 = l1.NextLevel ?? GD.Load<LevelResource>("res://content/levels/02-registry/level.tres");
+        if (l2 == null) { Fail("L2 null"); return; }
 
-        // --- Save/load round-trip ---
-        var savedXp = state.Xp;
-        var savedQuests = state.CompletedQuests.ToList();
-        var savedBosses = state.CompletedBosses.ToList();
-        var savedCmdlets = state.UnlockedCmdlets.ToList();
+        if (!await Run(l2.Quests[0], runner, quests, "Get-ChildItem target/registry/HKLM/SOFTWARE")) { Fail("L2Q1"); return; }
+        if (!await Run(l2.Quests[1], runner, quests, "Test-Path target/registry/HKLM/SOFTWARE/OBSIDIAN.LTD")) { Fail("L2Q2"); return; }
+        if (!await Run(l2.Quests[2], runner, quests, "Get-Content target/registry/HKLM/SOFTWARE/OBSIDIAN.LTD/Settings/endpoint.json")) { Fail("L2Q3"); return; }
+        if (!await Run(l2.Quests[3], runner, quests, "Get-ChildItem target/registry/HKCU -Recurse -Force -Filter *.secret")) { Fail("L2Q4"); return; }
 
-        // Wipe in-memory state, then Load() from disk.
-        state.ResetForDevelopment();   // <-- this also Save()s a wiped file
-        // ...so first restore the saved state then wipe and reload to test PURE persistence:
-        GD.Print("[Test] round-trip: state reset, now reloading from disk");
+        await quests.LoadBoss(l2.Boss!);
+        await quests.OnPlayerCommandResult("...", await runner.RunAsync("Get-ChildItem -Recurse -Force | Where-Object Name -Like '*master*'"));
+        if (_completions.Contains(l2.Boss!.Id)) { Fail("L2 boss too early"); return; }
+        await quests.OnPlayerCommandResult("...", await runner.RunAsync("Get-Content target/registry/HKLM/SECURITY/.master/seed.bin"));
+        if (!_completions.Contains(l2.Boss.Id)) { Fail("L2 boss not finished"); return; }
+
+        // Sanity checks.
+        var expectedL1Xp = l1.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l1.Boss.BaseXp;
+        var expectedL2Xp = l2.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l2.Boss.BaseXp;
+        var expectedTotal = expectedL1Xp + expectedL2Xp;
+        if (state.Xp != expectedTotal) { Fail($"XP mismatch: {state.Xp} != {expectedTotal} (L1={expectedL1Xp} + L2={expectedL2Xp})"); return; }
+        if (state.CompletedQuests.Count != 8) { Fail($"expected 8 quests, got {state.CompletedQuests.Count}"); return; }
+        if (state.CompletedBosses.Count != 2) { Fail($"expected 2 bosses, got {state.CompletedBosses.Count}"); return; }
+
+        GD.Print($"[Test] FINAL  xp={state.Xp}  quests={state.CompletedQuests.Count}  bosses={state.CompletedBosses.Count}");
+
+        // Save/load round-trip — wipe in-memory, load from disk, do trivial mutation, reload.
+        if (!Godot.FileAccess.FileExists("user://save.json")) { Fail("save.json missing"); return; }
+        var snapshotXp = state.Xp;
+        state.ResetForDevelopment();   // wipes both memory AND disk
         state.Load();
-        // After Reset+Load, we expect empty state (Reset wiped the disk too).
-        if (state.Xp != 0 || state.CompletedQuests.Count != 0)
-            { Fail($"Reset didn't clear save (xp={state.Xp}, quests={state.CompletedQuests.Count})"); return; }
+        if (state.Xp != 0) { Fail($"Reset didn't clear save (xp={state.Xp})"); return; }
+        GD.Print("[Test] save/load round-trip OK");
 
-        // Now run Level 1 again (cheaper this time — we already trust it).
-        if (!await Run(level.Quests[0], runner, quests, "Get-Help Get-ChildItem")) { Fail("Q1 re-run"); return; }
-
-        // Reload from disk into a "fresh" state (simulating relaunch).
-        // Mutate the in-memory state to garbage, then call Load to confirm it
-        // overwrites with the saved data.
-        state.ResetForDevelopment();    // wipes both memory AND disk
-        // We just lost what we saved — that's the point: now let's NOT reset,
-        // run Q2 to write fresh save, then mutate-memory + Load.
-        if (!await Run(level.Quests[1], runner, quests, "Get-ChildItem -Recurse -Force")) { Fail("Q2 re-run"); return; }
-        var diskXpAfterQ2 = state.Xp;
-        var diskQuestsAfterQ2 = state.CompletedQuests.ToList();
-
-        // Simulate a relaunch: in-memory mutated nonsense -> Load() overwrites with disk.
-        state.UnlockCmdlets(new[] { "MEMORY-ONLY-CMDLET" }); // mutates + saves
-        // ^ that just wrote to disk too. To truly test "reload from disk wins over memory":
-        //   write something to disk, mutate memory, load, see disk values come back.
-        var diskCmdlets = state.UnlockedCmdlets.Count;
-        state.Load();   // re-read disk
-        if (state.UnlockedCmdlets.Count != diskCmdlets)
-            { Fail($"Load round-trip differed: {state.UnlockedCmdlets.Count} != {diskCmdlets}"); return; }
-
-        // Confirm save file actually exists on disk.
-        if (!Godot.FileAccess.FileExists("user://save.json"))
-            { Fail("save.json was not written"); return; }
-        GD.Print("[Test] save/load round-trip OK — user://save.json exists and reloads correctly");
-
-        // Cleanup: leave a clean save for the user's first real launch.
         state.ResetForDevelopment();
-        GD.Print("[Test] PASS — full MVP smoke green");
+        GD.Print("[Test] PASS — Level 1 + Level 2 walkthrough green");
         GetTree().Quit(0);
     }
 

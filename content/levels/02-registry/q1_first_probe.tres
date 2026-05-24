@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b2_q1_first_probe"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L2Q1"]
+script = ExtResource("3_obj")
+Needle = "OBSIDIAN"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_L2Q1_1"]
+script = ExtResource("2_hint")
+Text = "On a Windows box, installed software lives under HKLM\\SOFTWARE. Our sandbox mirrors that as `target/registry/HKLM/SOFTWARE/`."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L2Q1_2"]
+script = ExtResource("2_hint")
+Text = "List that folder with `Get-ChildItem target/registry/HKLM/SOFTWARE`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L2Q1_3"]
+script = ExtResource("2_hint")
+Text = "Look for the OBSIDIAN.LTD vendor in the listing — that's our pivot target."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L2_q1_first_probe"
+Title = "First Probe"
+Narrative = "You're inside the perimeter. The target's registry tells you what's installed — vendors, versions, configs. Map the HKLM software hive and report what's there."
+VfsFixtures = {
+"target/registry/HKLM/SOFTWARE/Microsoft/Windows/CurrentVersion/value.json": "{}",
+"target/registry/HKLM/SOFTWARE/Mozilla/Firefox/installed.json": "{\"version\":\"125.0\"}",
+"target/registry/HKLM/SOFTWARE/OBSIDIAN.LTD/Settings/endpoint.json": "https://crl.obsidian.internal/v2/auth",
+"target/registry/HKLM/SOFTWARE/OBSIDIAN.LTD/Settings/api_key.json": "redacted",
+"target/registry/HKLM/SOFTWARE/Adobe/CommonFiles/license.json": "{}",
+"target/registry/HKCU/Software/Microsoft/Notepad/state.json": "{\"recent\":[\"todo.txt\"]}",
+"target/registry/HKCU/Software/Discord/cache.json": "{}"
+}
+AllowedCmdlets = PackedStringArray("Get-ChildItem", "Get-Help")
+MockModulePaths = PackedStringArray()
+Objective = SubResource("Objective_L2Q1")
+Hints = Array[Resource]([SubResource("Hint_L2Q1_1"), SubResource("Hint_L2Q1_2"), SubResource("Hint_L2Q1_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray()
+Xp = 75
+BonusXpHintFree = 30

@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="BossResource" load_steps=7 format=3 uid="uid://b2_boss_registry_whisper"]
+
+[ext_resource type="Script" path="res://scripts/resources/BossResource.cs" id="1_boss"]
+[ext_resource type="Script" path="res://scripts/resources/MultiStepObjective.cs" id="2_multi"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_out"]
+
+[sub_resource type="Resource" id="Step1_findhive"]
+script = ExtResource("3_out")
+Needle = "master"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Step2_extract"]
+script = ExtResource("3_out")
+Needle = "alpha-pivot-9981"
+IsRegex = false
+CaseSensitive = true
+
+[sub_resource type="Resource" id="MultiStep_whisper"]
+script = ExtResource("2_multi")
+Steps = Array[Resource]([SubResource("Step1_findhive"), SubResource("Step2_extract")])
+
+[resource]
+script = ExtResource("1_boss")
+Id = "L2_boss_registry_whisper"
+Title = "Registry Whisper"
+AdversaryName = "Federal HQ Sysadmin"
+IntroText = "The Federal HQ uses a non-default SECURITY hive for its master seed — only system processes can see it. You'll have to coax it out with the right flags.
+
+Two stages. Find the .master subkey, then extract the seed value. Your bytes are in their logs from the moment you start typing."
+VfsFixtures = {
+"target/registry/HKLM/SOFTWARE/Microsoft/Windows/CurrentVersion/value.json": "{}",
+"target/registry/HKLM/SECURITY/Policy/system.json": "{\"policy\":\"strict\"}",
+"target/registry/HKLM/SECURITY/.master/seed.bin": "SEED=alpha-pivot-9981\nROTATED=2026-05-01\nALGO=HMAC-SHA512",
+"target/registry/HKLM/SECURITY/.master/audit.log": "no anomalies",
+"target/registry/HKLM/SECURITY/SAM/v1/store.bin": "redacted",
+"target/registry/HKCU/Software/Discord/cache.json": "{}",
+"target/registry/HKCU/.shadow/decoy/master.bak": "not the real seed"
+}
+MockModulePaths = PackedStringArray()
+Objective = SubResource("MultiStep_whisper")
+TraceTimerSeconds = 0
+BaseXp = 300

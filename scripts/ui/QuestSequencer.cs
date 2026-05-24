@@ -84,14 +84,25 @@ public partial class QuestSequencer : Node
             return;
         }
 
-        // Boss done — level complete. Unlock next level if chained.
-        CurrentQuest = null;
-        CurrentBoss = null;
-        ShowingLevelComplete = true;
+        // Boss done — level complete. Either chain to the next level or
+        // settle into the "level complete" terminal state.
         if (CurrentLevel.NextLevel != null)
         {
             _state.UnlockLevel(CurrentLevel.NextLevel.Number);
+            CurrentLevel = CurrentLevel.NextLevel;
+            CurrentQuest = null;
+            CurrentBoss = null;
+            ShowingLevelComplete = false;
+            // Defer one frame so signals from the previous boss completion
+            // can fan out (HUD flashes etc.) before we redraw for the new level.
+            CallDeferred(nameof(StartCurrentLevel));
+            EmitSignal(SignalName.SequenceChanged);
+            return;
         }
+
+        CurrentQuest = null;
+        CurrentBoss = null;
+        ShowingLevelComplete = true;
         await _questManager.UnloadCurrent();
         EmitSignal(SignalName.SequenceChanged);
     }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 using Godot;
 
 namespace HackerGame.Autoload;
@@ -131,8 +132,8 @@ public partial class PowerShellRunner : Node
                 return new PSResult("", $"timed out after {timeoutMs}ms", false, sw.ElapsedMilliseconds);
             }
 
-            var stdout = await proc.StandardOutput.ReadToEndAsync(ct);
-            var stderr = await proc.StandardError.ReadToEndAsync(ct);
+            var stdout = ScrubNoise(await proc.StandardOutput.ReadToEndAsync(ct));
+            var stderr = ScrubNoise(await proc.StandardError.ReadToEndAsync(ct));
             sw.Stop();
 
             return new PSResult(stdout, stderr, proc.ExitCode == 0, sw.ElapsedMilliseconds);
@@ -146,13 +147,34 @@ public partial class PowerShellRunner : Node
 
     private string WrapCommand(string command)
     {
+        // Prefix every invocation with $PSStyle.OutputRendering = 'PlainText' so
+        // pwsh doesn't add its own ANSI styling to output. We then layer our own
+        // colors on top in TerminalController. Belt + suspenders: anything that
+        // slips through still gets stripped by ScrubNoise() before the player sees it.
         // For MVP we don't enforce a cmdlet whitelist at the engine level — disallowed
         // cmdlets still execute. Quest design uses ObjectiveResource.Verify to gate
         // progression, and Pester tests give the player a clear "your output didn't
         // satisfy the goal" instead of a hard wall. Switch to a constrained script
         // wrapper when a quest design actually requires it.
-        return command + "\n";
+        return
+            "$PSStyle.OutputRendering = 'PlainText'\n" +
+            "$ErrorActionPreference = 'Continue'\n" +
+            command + "\n";
     }
+
+    // Match terminal-mode escapes pwsh emits at startup/shutdown but the embedded
+    // godot-xterm widget renders as garbage:
+    //   - DEC private modes:    ESC [ ? N (h|l)            cursor mode, focus reporting, paste
+    //   - OSC (window title):   ESC ] ... (BEL | ESC \)    PSReadLine title updates
+    //   - DEC application:      ESC =  and  ESC >
+    // We keep SGR (color) escapes — ESC [ ... m — alone.
+    private static readonly Regex NoiseRegex = new(
+        @"\x1b\[\?[\d;]*[hl]" +                  // DEC private mode set/reset
+        @"|\x1b\][^\x07\x1b]*(\x07|\x1b\\)" +    // OSC ... BEL or ST
+        @"|\x1b[=>]",                            // application/normal keypad
+        RegexOptions.Compiled);
+
+    private static string ScrubNoise(string s) => string.IsNullOrEmpty(s) ? s : NoiseRegex.Replace(s, "");
 
     public string GetPSVersion()
     {

@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b2_q3_read_setting"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L2Q3"]
+script = ExtResource("3_obj")
+Needle = "obsidian.internal"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_L2Q3_1"]
+script = ExtResource("2_hint")
+Text = "The OBSIDIAN.LTD `Settings/endpoint.json` value holds their C2 host. Read it."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L2Q3_2"]
+script = ExtResource("2_hint")
+Text = "`Get-Content target/registry/HKLM/SOFTWARE/OBSIDIAN.LTD/Settings/endpoint.json`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L2Q3_3"]
+script = ExtResource("2_hint")
+Text = "Your output must contain `obsidian.internal` — that's the hostname embedded in the URL."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L2_q3_read_the_setting"
+Title = "Read the Setting"
+Narrative = "OBSIDIAN.LTD ships a custom remote-config endpoint. Find their server URL — the answer is somewhere inside `Settings/endpoint.json`. Your output must contain the hostname `obsidian.internal`."
+VfsFixtures = {
+"target/registry/HKLM/SOFTWARE/OBSIDIAN.LTD/Settings/endpoint.json": "https://crl.obsidian.internal/v2/auth",
+"target/registry/HKLM/SOFTWARE/OBSIDIAN.LTD/Settings/api_key.json": "redacted-by-leak-team",
+"target/registry/HKLM/SOFTWARE/OBSIDIAN.LTD/Settings/region.json": "eu-central-1"
+}
+AllowedCmdlets = PackedStringArray("Get-Content", "Get-ChildItem", "Test-Path", "Get-Help")
+MockModulePaths = PackedStringArray()
+Objective = SubResource("Objective_L2Q3")
+Hints = Array[Resource]([SubResource("Hint_L2Q3_1"), SubResource("Hint_L2Q3_2"), SubResource("Hint_L2Q3_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray()
+Xp = 110
+BonusXpHintFree = 45

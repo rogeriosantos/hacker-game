@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b2_q4_recursive_sweep"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L2Q4"]
+script = ExtResource("3_obj")
+Needle = "auth.secret"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_L2Q4_1"]
+script = ExtResource("2_hint")
+Text = "`-Recurse` descends through every subdirectory. `-Filter` narrows the listing by name pattern."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L2Q4_2"]
+script = ExtResource("2_hint")
+Text = "Sweep HKCU for anything ending in `.secret`: `Get-ChildItem target/registry/HKCU -Recurse -Filter *.secret`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L2Q4_3"]
+script = ExtResource("2_hint")
+Text = "Hidden folders (starting with `.`) need `-Force` to be listed. Try `-Recurse -Force -Filter *.secret`."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L2_q4_recursive_sweep"
+Title = "Sweep the Shadow"
+Narrative = "The user-specific HKCU hive has a `.shadow` namespace where apps stash their credentials. Sweep it for any file ending in `.secret`. You'll want `-Recurse`, `-Force`, and `-Filter`."
+VfsFixtures = {
+"target/registry/HKCU/Software/Discord/cache.json": "{}",
+"target/registry/HKCU/Software/Notepad/state.json": "{}",
+"target/registry/HKCU/.shadow/Discord/token.bak": "expired-token",
+"target/registry/HKCU/.shadow/MailClient/store/imap.bak": "old",
+"target/registry/HKCU/.shadow/OBSIDIAN/v2/keychain/auth.secret": "BEGIN-OBSIDIAN-AUTH-eyJ...END",
+"target/registry/HKCU/.shadow/OBSIDIAN/v2/keychain/refresh.bak": "stale",
+"target/registry/HKCU/.shadow/SystemSync/badge.bak": "n/a"
+}
+AllowedCmdlets = PackedStringArray("Get-ChildItem", "Get-Content", "Test-Path", "Get-Help")
+MockModulePaths = PackedStringArray()
+Objective = SubResource("Objective_L2Q4")
+Hints = Array[Resource]([SubResource("Hint_L2Q4_1"), SubResource("Hint_L2Q4_2"), SubResource("Hint_L2Q4_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray()
+Xp = 130
+BonusXpHintFree = 50

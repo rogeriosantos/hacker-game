@@ -155,6 +155,14 @@ public partial class TerminalController : Node
             return;
         }
 
+        // Intercept meta-commands BEFORE shipping to pwsh — they exist only
+        // inside the game. Player runs `/help` to discover them.
+        if (TryHandleMetaCommand(trimmed))
+        {
+            WritePrompt();
+            return;
+        }
+
         AddToHistory(trimmed);
         _busy = true;
         try
@@ -178,6 +186,50 @@ public partial class TerminalController : Node
         {
             _busy = false;
             WritePrompt();
+        }
+    }
+
+    private bool TryHandleMetaCommand(string line)
+    {
+        var cmd = line.ToLowerInvariant();
+        switch (cmd)
+        {
+            case "/help":
+            case "/?":
+                Write("\r\n" + Cyan + "in-game commands:" + Reset + "\r\n" +
+                      "  " + Cyan + "/quest" + Reset + "   — re-print the current quest brief\r\n" +
+                      "  " + Cyan + "/clear" + Reset + "   — wipe the terminal screen\r\n" +
+                      "  " + Cyan + "/help" + Reset + "    — this list\r\n" +
+                      "  " + Grey + "anything else is real PowerShell." + Reset + "\r\n");
+                return true;
+            case "/clear":
+            case "/cls":
+                Write("\x1b[2J\x1b[H");
+                return true;
+            case "/quest":
+                PrintCurrentQuest();
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private void PrintCurrentQuest()
+    {
+        if (!_questManager.IsActive)
+        {
+            Write("\r\n" + Grey + "no active quest." + Reset + "\r\n");
+            return;
+        }
+        if (_questManager.ActiveQuest is { } q)
+        {
+            Write("\r\n" + Green + ">> " + q.Title + Reset + "\r\n" +
+                  Grey + q.Narrative.Replace("\n", "\r\n") + Reset + "\r\n");
+        }
+        else if (_questManager.ActiveBoss is { } b)
+        {
+            Write("\r\n" + Red + ">> BOSS · " + b.Title + Reset + "\r\n" +
+                  Grey + b.IntroText.Replace("\n", "\r\n") + Reset + "\r\n");
         }
     }
 
