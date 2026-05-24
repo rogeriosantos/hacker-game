@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="BossResource" load_steps=8 format=3 uid="uid://b4_boss_port_cartography"]
+
+[ext_resource type="Script" path="res://scripts/resources/BossResource.cs" id="1_boss"]
+[ext_resource type="Script" path="res://scripts/resources/MultiStepObjective.cs" id="2_multi"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_out"]
+
+[sub_resource type="Resource" id="Step1_resolve"]
+script = ExtResource("3_out")
+Needle = "10.4.7.221"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Step2_portcheck"]
+script = ExtResource("3_out")
+Needle = "RemotePort       : 8443"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Step3_pulldoc"]
+script = ExtResource("3_out")
+Needle = "Bearer realm=obsidian-crl"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="MultiStep_port"]
+script = ExtResource("2_multi")
+Steps = Array[Resource]([SubResource("Step1_resolve"), SubResource("Step2_portcheck"), SubResource("Step3_pulldoc")])
+
+[resource]
+script = ExtResource("1_boss")
+Id = "L4_boss_port_cartography"
+Title = "Port Cartography"
+AdversaryName = "OBSIDIAN CRL Service"
+IntroText = "Their CRL host (`crl.obsidian.internal`) hides behind a custom port. Map it.
+
+Three stages: (1) resolve the host's IP, (2) confirm port 8443 is open, (3) GET the auth endpoint and surface the WWW-Authenticate challenge so we know what scheme to forge against.
+
+No timer — but every probe is logged on the other end. Be efficient."
+VfsFixtures = {}
+MockModulePaths = PackedStringArray("res://mock-modules/MockNetwork")
+Objective = SubResource("MultiStep_port")
+TraceTimerSeconds = 0
+BaseXp = 400

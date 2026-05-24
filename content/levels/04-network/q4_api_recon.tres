@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b4_q4_api_recon"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L4Q4"]
+script = ExtResource("3_obj")
+Needle = "webauthn"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_L4Q4_1"]
+script = ExtResource("2_hint")
+Text = "`Invoke-RestMethod` is `Invoke-WebRequest`'s smart cousin — it parses JSON for you and returns objects you can pipe."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L4Q4_2"]
+script = ExtResource("2_hint")
+Text = "Pull the auth API version endpoint: `Invoke-RestMethod https://auth.obsidian.internal/api/version`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L4Q4_3"]
+script = ExtResource("2_hint")
+Text = "The response includes a `capabilities` list. Your output must contain `webauthn` — that tells us the target supports FIDO."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L4_q4_api_recon"
+Title = "API Recon"
+Narrative = "Their auth API exposes a `/version` endpoint that gleefully reveals its build, region, and supported auth methods. Pull it and confirm WebAuthn is on the menu — your output must contain `webauthn`."
+VfsFixtures = {}
+AllowedCmdlets = PackedStringArray("Invoke-RestMethod", "Get-Help")
+MockModulePaths = PackedStringArray("res://mock-modules/MockNetwork")
+Objective = SubResource("Objective_L4Q4")
+Hints = Array[Resource]([SubResource("Hint_L4Q4_1"), SubResource("Hint_L4Q4_2"), SubResource("Hint_L4Q4_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Invoke-RestMethod")
+Xp = 150
+BonusXpHintFree = 55

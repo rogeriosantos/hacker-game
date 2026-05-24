@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="LevelResource" load_steps=7 format=3 uid="uid://b3_level_03"]
+[gd_resource type="Resource" script_class="LevelResource" load_steps=8 format=3 uid="uid://b3_level_03"]
 
 [ext_resource type="Script" path="res://scripts/resources/LevelResource.cs" id="1_level"]
 [ext_resource type="Resource" path="res://content/levels/03-processes/q1_who_lives_here.tres" id="2_q1"]
@@ -6,6 +6,7 @@
 [ext_resource type="Resource" path="res://content/levels/03-processes/q3_who_runs_the_services.tres" id="4_q3"]
 [ext_resource type="Resource" path="res://content/levels/03-processes/q4_first_kill.tres" id="5_q4"]
 [ext_resource type="Resource" path="res://content/levels/03-processes/boss_silence_the_defender.tres" id="6_boss"]
+[ext_resource type="Resource" path="res://content/levels/04-network/level.tres" id="7_next"]
 
 [resource]
 script = ExtResource("1_level")
@@ -16,3 +17,4 @@ VerbFamily = "Get-* / Stop-*"
 Biome = "Process: , Service:"
 Quests = Array[Resource]([ExtResource("2_q1"), ExtResource("3_q2"), ExtResource("4_q3"), ExtResource("5_q4")])
 Boss = ExtResource("6_boss")
+NextLevel = ExtResource("7_next")

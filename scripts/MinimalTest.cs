@@ -67,14 +67,32 @@ public partial class MinimalTest : Node
         await quests.OnPlayerCommandResult("...", await runner.RunAsync("Stop-Process -Id 1024"));
         if (!_completions.Contains(l3.Boss.Id)) { Fail("L3 boss not finished"); return; }
 
+        // Level 4 — network recon via MockNetwork.
+        var l4 = l3.NextLevel ?? GD.Load<LevelResource>("res://content/levels/04-network/level.tres");
+        if (l4 == null) { Fail("L4 null"); return; }
+
+        if (!await Run(l4.Quests[0], runner, quests, "Test-NetConnection target.obsidian.internal -Port 443")) { Fail("L4Q1"); return; }
+        if (!await Run(l4.Quests[1], runner, quests, "Resolve-DnsName auth.obsidian.internal")) { Fail("L4Q2"); return; }
+        if (!await Run(l4.Quests[2], runner, quests, "Invoke-WebRequest http://target.obsidian.internal/banner")) { Fail("L4Q3"); return; }
+        if (!await Run(l4.Quests[3], runner, quests, "Invoke-RestMethod https://auth.obsidian.internal/api/version")) { Fail("L4Q4"); return; }
+
+        await quests.LoadBoss(l4.Boss!);
+        await quests.OnPlayerCommandResult("...", await runner.RunAsync("Resolve-DnsName crl.obsidian.internal"));
+        if (_completions.Contains(l4.Boss!.Id)) { Fail("L4 boss too early after stage 1"); return; }
+        await quests.OnPlayerCommandResult("...", await runner.RunAsync("Test-NetConnection crl.obsidian.internal -Port 8443"));
+        if (_completions.Contains(l4.Boss!.Id)) { Fail("L4 boss too early after stage 2"); return; }
+        await quests.OnPlayerCommandResult("...", await runner.RunAsync("Invoke-WebRequest https://crl.obsidian.internal/v2/auth"));
+        if (!_completions.Contains(l4.Boss.Id)) { Fail("L4 boss not finished"); return; }
+
         // Sanity checks.
         var expectedL1Xp = l1.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l1.Boss.BaseXp;
         var expectedL2Xp = l2.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l2.Boss.BaseXp;
         var expectedL3Xp = l3.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l3.Boss.BaseXp;
-        var expectedTotal = expectedL1Xp + expectedL2Xp + expectedL3Xp;
-        if (state.Xp != expectedTotal) { Fail($"XP mismatch: {state.Xp} != {expectedTotal} (L1={expectedL1Xp} + L2={expectedL2Xp} + L3={expectedL3Xp})"); return; }
-        if (state.CompletedQuests.Count != 12) { Fail($"expected 12 quests, got {state.CompletedQuests.Count}"); return; }
-        if (state.CompletedBosses.Count != 3) { Fail($"expected 3 bosses, got {state.CompletedBosses.Count}"); return; }
+        var expectedL4Xp = l4.Quests.Select(q => q!.Xp + q.BonusXpHintFree).Sum() + l4.Boss.BaseXp;
+        var expectedTotal = expectedL1Xp + expectedL2Xp + expectedL3Xp + expectedL4Xp;
+        if (state.Xp != expectedTotal) { Fail($"XP mismatch: {state.Xp} != {expectedTotal} (L1={expectedL1Xp} + L2={expectedL2Xp} + L3={expectedL3Xp} + L4={expectedL4Xp})"); return; }
+        if (state.CompletedQuests.Count != 16) { Fail($"expected 16 quests, got {state.CompletedQuests.Count}"); return; }
+        if (state.CompletedBosses.Count != 4) { Fail($"expected 4 bosses, got {state.CompletedBosses.Count}"); return; }
 
         GD.Print($"[Test] FINAL  xp={state.Xp}  quests={state.CompletedQuests.Count}  bosses={state.CompletedBosses.Count}");
 
@@ -87,7 +105,7 @@ public partial class MinimalTest : Node
         GD.Print("[Test] save/load round-trip OK");
 
         state.ResetForDevelopment();
-        GD.Print("[Test] PASS — Levels 1 + 2 + 3 walkthrough green");
+        GD.Print("[Test] PASS — Levels 1 + 2 + 3 + 4 walkthrough green");
         GetTree().Quit(0);
     }
 

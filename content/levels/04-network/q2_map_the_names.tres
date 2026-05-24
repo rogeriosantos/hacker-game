@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b4_q2_dns"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L4Q2"]
+script = ExtResource("3_obj")
+Needle = "10.4.7.222"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_L4Q2_1"]
+script = ExtResource("2_hint")
+Text = "`Resolve-DnsName` is PowerShell's nslookup. Pass it a hostname and it returns the A record."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L4Q2_2"]
+script = ExtResource("2_hint")
+Text = "Resolve the auth host: `Resolve-DnsName auth.obsidian.internal`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L4Q2_3"]
+script = ExtResource("2_hint")
+Text = "Your output must contain the IP `10.4.7.222`."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L4_q2_map_the_names"
+Title = "Map the Names"
+Narrative = "Names are easy to remember. IPs route packets. Resolve `auth.obsidian.internal` and report the IP — your output must contain it."
+VfsFixtures = {}
+AllowedCmdlets = PackedStringArray("Resolve-DnsName", "Get-Help")
+MockModulePaths = PackedStringArray("res://mock-modules/MockNetwork")
+Objective = SubResource("Objective_L4Q2")
+Hints = Array[Resource]([SubResource("Hint_L4Q2_1"), SubResource("Hint_L4Q2_2"), SubResource("Hint_L4Q2_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Resolve-DnsName")
+Xp = 110
+BonusXpHintFree = 40

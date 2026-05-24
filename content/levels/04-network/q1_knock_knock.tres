@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b4_q1_knock"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L4Q1"]
+script = ExtResource("3_obj")
+Needle = "TcpTestSucceeded : True"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_L4Q1_1"]
+script = ExtResource("2_hint")
+Text = "`Test-NetConnection` probes a host and port; reports back whether the TCP handshake succeeded."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L4Q1_2"]
+script = ExtResource("2_hint")
+Text = "Knock on the OBSIDIAN HTTPS port: `Test-NetConnection target.obsidian.internal -Port 443`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L4Q1_3"]
+script = ExtResource("2_hint")
+Text = "Your output must contain `TcpTestSucceeded : True` — that's the line saying the port answered."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L4_q1_knock_knock"
+Title = "Knock, Knock"
+Narrative = "OBSIDIAN exposes a target node at `target.obsidian.internal`. Knock on its HTTPS port (443) and confirm it answers. The objective wants `TcpTestSucceeded : True` in your output."
+VfsFixtures = {}
+AllowedCmdlets = PackedStringArray("Test-NetConnection", "Get-Help")
+MockModulePaths = PackedStringArray("res://mock-modules/MockNetwork")
+Objective = SubResource("Objective_L4Q1")
+Hints = Array[Resource]([SubResource("Hint_L4Q1_1"), SubResource("Hint_L4Q1_2"), SubResource("Hint_L4Q1_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Test-NetConnection")
+Xp = 100
+BonusXpHintFree = 40

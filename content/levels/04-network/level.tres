@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="LevelResource" load_steps=7 format=3 uid="uid://b4_level_04"]
+
+[ext_resource type="Script" path="res://scripts/resources/LevelResource.cs" id="1_level"]
+[ext_resource type="Resource" path="res://content/levels/04-network/q1_knock_knock.tres" id="2_q1"]
+[ext_resource type="Resource" path="res://content/levels/04-network/q2_map_the_names.tres" id="3_q2"]
+[ext_resource type="Resource" path="res://content/levels/04-network/q3_pull_the_banner.tres" id="4_q3"]
+[ext_resource type="Resource" path="res://content/levels/04-network/q4_api_recon.tres" id="5_q4"]
+[ext_resource type="Resource" path="res://content/levels/04-network/boss_port_cartography.tres" id="6_boss"]
+
+[resource]
+script = ExtResource("1_level")
+Number = 4
+Title = "Reach Out"
+Theme = "Touch the network without touching the disk. Invoke-* sends packets at things, Test-NetConnection / Resolve-DnsName ask the network what it knows. This is the school of recon-by-wire."
+VerbFamily = "Invoke-* / Test-* / Resolve-*"
+Biome = "DNS:, TCP:, HTTPS:"
+Quests = Array[Resource]([ExtResource("2_q1"), ExtResource("3_q2"), ExtResource("4_q3"), ExtResource("5_q4")])
+Boss = ExtResource("6_boss")

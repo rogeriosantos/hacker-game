@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="QuestResource" load_steps=6 format=3 uid="uid://b4_q3_banner"]
+
+[ext_resource type="Script" path="res://scripts/resources/QuestResource.cs" id="1_quest"]
+[ext_resource type="Script" path="res://scripts/resources/HintTier.cs" id="2_hint"]
+[ext_resource type="Script" path="res://scripts/resources/OutputContainsObjective.cs" id="3_obj"]
+
+[sub_resource type="Resource" id="Objective_L4Q3"]
+script = ExtResource("3_obj")
+Needle = "OpenSSH_9.6"
+IsRegex = false
+CaseSensitive = false
+
+[sub_resource type="Resource" id="Hint_L4Q3_1"]
+script = ExtResource("2_hint")
+Text = "`Invoke-WebRequest` (alias `iwr`) sends an HTTP GET and returns the response. The Content property holds the body."
+Level = 0
+
+[sub_resource type="Resource" id="Hint_L4Q3_2"]
+script = ExtResource("2_hint")
+Text = "OBSIDIAN exposes a `/banner` endpoint that returns the SSH server banner: `Invoke-WebRequest http://target.obsidian.internal/banner`."
+Level = 1
+
+[sub_resource type="Resource" id="Hint_L4Q3_3"]
+script = ExtResource("2_hint")
+Text = "Your output must contain `OpenSSH_9.6` — that's the SSH version string baked into the banner."
+Level = 2
+
+[resource]
+script = ExtResource("1_quest")
+Id = "L4_q3_pull_the_banner"
+Title = "Pull the Banner"
+Narrative = "Service banners give away versions. The OBSIDIAN target exposes a `/banner` endpoint on HTTP. Fetch it. Your output must contain `OpenSSH_9.6`."
+VfsFixtures = {}
+AllowedCmdlets = PackedStringArray("Invoke-WebRequest", "Get-Help")
+MockModulePaths = PackedStringArray("res://mock-modules/MockNetwork")
+Objective = SubResource("Objective_L4Q3")
+Hints = Array[Resource]([SubResource("Hint_L4Q3_1"), SubResource("Hint_L4Q3_2"), SubResource("Hint_L4Q3_3")])
+CmdletsUnlockedOnCompletion = PackedStringArray("Invoke-WebRequest")
+Xp = 130
+BonusXpHintFree = 50
